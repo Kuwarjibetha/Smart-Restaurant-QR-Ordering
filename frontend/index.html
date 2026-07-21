@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spice Trail — Restaurant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .hero {
+    background: linear-gradient(160deg, var(--cream) 0%, var(--cream-deep) 100%);
+    border-bottom: 1px solid var(--clay-line);
+  }
+  .badge-row span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--charcoal-soft);
+  }
+  .feature-icon {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--cream-deep);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    border: 1.5px solid var(--clay-line);
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<header class="sticky top-0 z-30" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
+  <div class="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
+    <p class="display text-xl">🌿 Spice Trail</p>
+    <nav class="text-sm font-semibold">
+      <a href="admin/login.html" style="color: var(--charcoal-soft); text-decoration:none;">Staff login</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="max-w-5xl mx-auto px-5 pt-16 pb-20 text-center">
+    <p class="eyebrow mb-3">Welcome</p>
+    <h1 class="display text-4xl md:text-5xl mb-5" style="line-height:1.15;">
+      Good food,<br/>ordered your way.
+    </h1>
+    <p class="text-base md:text-lg max-w-xl mx-auto mb-8" style="color: var(--charcoal-soft)">
+      Scan the QR code on your table to see the menu and order straight from
+      your phone — no app, no waiting to flag someone down.
+    </p>
+
+    <div class="flex flex-wrap items-center justify-center gap-4 mb-10">
+      <a href="customer/menu.html?table=1" class="btn-primary px-6 py-3 inline-block" style="text-decoration:none;">
+        Browse the menu
+      </a>
+    </div>
+
+    <div class="badge-row flex flex-wrap items-center justify-center gap-6">
+      <span>📱 Order from your phone</span>
+      <span>🔥 Live kitchen status</span>
+      <span>⭐ Rate every dish</span>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<main class="max-w-5xl mx-auto px-5 py-16">
+  <p class="eyebrow text-center mb-2">How it works</p>
+  <h2 class="display text-2xl text-center mb-12">Three steps, zero hassle</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="card p-6 text-center">
+      <div class="feature-icon mx-auto mb-4">📷</div>
+      <h3 class="font-semibold mb-2">1. Scan</h3>
+      <p class="text-sm" style="color: var(--charcoal-soft)">
+        Point your phone's camera at the QR code on your table — it opens
+        the menu instantly, no app to download.
+      </p>
+    </div>
+    <div class="card p-6 text-center">
+      <div class="feature-icon mx-auto mb-4">🍽️</div>
+      <h3 class="font-semibold mb-2">2. Order</h3>
+      <p class="text-sm" style="color: var(--charcoal-soft)">
+        Not sure what to get? Tell us your mood and we'll point you at
+        something you'll love. Add dishes to your cart and send it straight
+        to the kitchen.
+      </p>
+    </div>
+    <div class="card p-6 text-center">
+      <div class="feature-icon mx-auto mb-4">🔥</div>
+      <h3 class="font-semibold mb-2">3. Track &amp; enjoy</h3>
+      <p class="text-sm" style="color: var(--charcoal-soft)">
+        Watch your order move from Placed → Preparing → Served in real
+        time, right from your phone.
+      </p>
+    </div>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer style="border-top: 1px solid var(--clay-line); background: var(--cream);">
+  <div class="max-w-5xl mx-auto px-5 py-8 flex flex-col md:flex-row items-center justify-between gap-3 text-sm" style="color: var(--charcoal-soft)">
+    <p>© 2026 Spice Trail. All rights reserved.</p>
+    <a href="admin/login.html" style="color: var(--charcoal-soft); text-decoration:none;">Staff login</a>
+  </div>
+</footer>
+
+</body>
+</html>

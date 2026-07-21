@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your Cart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<header class="sticky top-0 z-30" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
+  <div class="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
+    <div>
+      <p class="eyebrow" id="table-label">Table —</p>
+      <h1 class="display text-2xl">Your Cart</h1>
+    </div>
+    <a id="back-link" href="menu.html" class="text-sm font-semibold" style="color: var(--saffron-deep); text-decoration:none;">← Menu</a>
+  </div>
+</header>
+
+<main class="max-w-2xl mx-auto px-5 pb-40 pt-6">
+  <div id="cart-items"></div>
+  <div id="empty-state" class="card p-8 text-center hidden">
+    <p class="display text-lg mb-1">Your cart is empty</p>
+    <p class="text-sm mb-4" style="color: var(--charcoal-soft)">Add a few dishes from the menu to get started.</p>
+    <a id="empty-menu-link" href="menu.html" class="btn-primary inline-block px-5 py-2 text-sm" style="text-decoration:none;">Browse menu</a>
+  </div>
+</main>
+
+<footer id="checkout-bar" class="fixed bottom-0 left-0 right-0" style="background: var(--white); border-top: 1px solid var(--clay-line);">
+  <div class="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
+    <div>
+      <p class="text-xs" style="color: var(--charcoal-soft)">Total</p>
+      <p class="display text-xl" id="cart-total">₹0</p>
+    </div>
+    <button id="place-order-btn" class="btn-primary px-6 py-3">Place order</button>
+  </div>
+</footer>
+
+<script src="../js/api.js"></script>
+<script src="../js/cart.js"></script>
+<script>
+  const tableNumber = getTableNumberFromUrl() || 1;
+  document.getElementById("table-label").textContent = `Table ${tableNumber}`;
+  document.getElementById("back-link").href = `menu.html?table=${tableNumber}`;
+  document.getElementById("empty-menu-link").href = `menu.html?table=${tableNumber}`;
+
+  function render() {
+    const cart = getCart(tableNumber);
+    const container = document.getElementById("cart-items");
+    const empty = document.getElementById("empty-state");
+    const checkoutBar = document.getElementById("checkout-bar");
+
+    if (cart.length === 0) {
+      container.innerHTML = "";
+      empty.classList.remove("hidden");
+      checkoutBar.style.display = "none";
+      return;
+    }
+    empty.classList.add("hidden");
+    checkoutBar.style.display = "block";
+
+    container.innerHTML = "";
+    cart.forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "card p-4 flex items-center justify-between gap-3 mb-3";
+      row.innerHTML = `
+        <div>
+          <p class="font-semibold">${item.name}</p>
+          <p class="text-sm" style="color: var(--charcoal-soft)">₹${item.price} each</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="btn-secondary" style="width:32px;height:32px;padding:0;">−</button>
+          <span class="font-semibold w-5 text-center">${item.quantity}</span>
+          <button class="btn-secondary" style="width:32px;height:32px;padding:0;">+</button>
+        </div>
+      `;
+      const [minusBtn, plusBtn] = row.querySelectorAll("button");
+      minusBtn.onclick = () => { updateCartQuantity(tableNumber, item.menuItemId, item.quantity - 1); render(); };
+      plusBtn.onclick = () => { updateCartQuantity(tableNumber, item.menuItemId, item.quantity + 1); render(); };
+      container.appendChild(row);
+    });
+
+    document.getElementById("cart-total").textContent = `₹${cartTotal(cart)}`;
+  }
+
+  document.getElementById("place-order-btn").onclick = async () => {
+    const cart = getCart(tableNumber);
+    if (cart.length === 0) return;
+
+    const btn = document.getElementById("place-order-btn");
+    btn.disabled = true;
+    btn.textContent = "Placing…";
+
+    try {
+      const { order } = await api.placeOrder(
+        tableNumber,
+        cart.map((c) => ({ menuItemId: c.menuItemId, quantity: c.quantity }))
+      );
+      clearCart(tableNumber);
+      window.location.href = `order-status.html?table=${tableNumber}&order=${order._id}`;
+    } catch (err) {
+      alert(err.message || "Couldn't place your order. Please try again.");
+      btn.disabled = false;
+      btn.textContent = "Place order";
+    }
+  };
+
+  render();
+</script>
+</body>
+</html>

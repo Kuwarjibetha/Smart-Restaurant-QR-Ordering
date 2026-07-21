@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Order Status</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="../js/socket.io.min.js"></script>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<header class="sticky top-0 z-30" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
+  <div class="max-w-2xl mx-auto px-5 py-4">
+    <p class="eyebrow" id="table-label">Table —</p>
+    <h1 class="display text-2xl">Your Order</h1>
+  </div>
+</header>
+
+<main class="max-w-2xl mx-auto px-5 pb-16 pt-8">
+
+  <section class="card p-6 mb-8">
+    <div class="spice-trail mb-6">
+      <div class="stage" data-status="placed">
+        <div class="line"></div>
+        <div class="dot">📝</div>
+        <div class="label">Placed</div>
+      </div>
+      <div class="stage" data-status="preparing">
+        <div class="line"></div>
+        <div class="dot">🔥</div>
+        <div class="label">Preparing</div>
+      </div>
+      <div class="stage" data-status="served">
+        <div class="dot">🍽️</div>
+        <div class="label">Served</div>
+      </div>
+    </div>
+    <p class="text-center text-sm" id="status-message" style="color: var(--charcoal-soft)">Loading your order…</p>
+  </section>
+
+  <section id="order-details" class="card p-5 mb-8"></section>
+
+  <section id="feedback-section" class="card p-5 hidden">
+    <p class="eyebrow mb-3">Rate your dishes</p>
+    <div id="feedback-items" class="space-y-4"></div>
+    <button id="submit-feedback-btn" class="btn-primary w-full py-3 mt-4">Submit feedback</button>
+    <p id="feedback-thanks" class="text-center text-sm mt-3 hidden" style="color: var(--cardamom);">Thanks — that helps the kitchen! 🌿</p>
+  </section>
+
+  <a href="menu.html" id="order-more-link" class="btn-secondary block text-center py-3 mt-6" style="text-decoration:none;">Order more</a>
+</main>
+
+<script src="../js/api.js"></script>
+<script src="../js/socketClient.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const tableNumber = Number(params.get("table")) || 1;
+  const orderId = params.get("order");
+
+  document.getElementById("table-label").textContent = `Table ${tableNumber}`;
+  document.getElementById("order-more-link").href = `menu.html?table=${tableNumber}`;
+
+  const STAGES = ["placed", "preparing", "served"];
+
+  function paintStatus(status) {
+    const currentIndex = STAGES.indexOf(status);
+    document.querySelectorAll(".spice-trail .stage").forEach((el, i) => {
+      el.classList.remove("active", "done");
+      if (i < currentIndex) el.classList.add("done");
+      else if (i === currentIndex) el.classList.add("active");
+    });
+
+    const messages = {
+      placed: "Your order has been sent to the kitchen.",
+      preparing: "The kitchen is on it 🔥",
+      served: "Enjoy your meal!",
+    };
+    document.getElementById("status-message").textContent = messages[status] || "";
+
+    if (status === "served") {
+      document.getElementById("feedback-section").classList.remove("hidden");
+    }
+  }
+
+  function renderOrderDetails(order) {
+    const el = document.getElementById("order-details");
+    el.innerHTML = `
+      <p class="eyebrow mb-3">Order summary</p>
+      ${order.items.map((i) => `
+        <div class="flex justify-between text-sm mb-2">
+          <span>${i.quantity} × ${i.name}</span>
+          <span>₹${i.price * i.quantity}</span>
+        </div>
+      `).join("")}
+      <div class="flex justify-between font-semibold pt-3 mt-2" style="border-top: 1px solid var(--clay-line);">
+        <span>Total</span>
+        <span>₹${order.totalAmount}</span>
+      </div>
+      <p class="text-sm mt-3" style="color: var(--charcoal-soft)">Estimated wait: ~${order.estimatedWaitTime} min</p>
+    `;
+
+    renderFeedbackForm(order);
+  }
+
+  function renderFeedbackForm(order) {
+    const container = document.getElementById("feedback-items");
+    container.innerHTML = "";
+    order.items.forEach((item) => {
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <p class="text-sm font-semibold mb-1">${item.name}</p>
+        <div class="flex gap-1" data-menu-item-id="${item.menuItemId}">
+          ${[1,2,3,4,5].map((n) => `<button class="star" data-value="${n}" style="font-size:1.3rem; background:none; border:none; cursor:pointer; opacity:0.35;">★</button>`).join("")}
+        </div>
+      `;
+      const stars = row.querySelectorAll(".star");
+      stars.forEach((star) => {
+        star.onclick = () => {
+          const value = Number(star.dataset.value);
+          stars.forEach((s) => (s.style.opacity = Number(s.dataset.value) <= value ? "1" : "0.35"));
+          row.querySelector("[data-menu-item-id]").dataset.selected = value;
+        };
+      });
+      container.appendChild(row);
+    });
+  }
+
+  document.getElementById("submit-feedback-btn").onclick = async () => {
+    const rows = document.querySelectorAll("#feedback-items [data-menu-item-id]");
+    const ratings = Array.from(rows)
+      .filter((r) => r.dataset.selected)
+      .map((r) => ({ menuItemId: r.dataset.menuItemId, stars: Number(r.dataset.selected) }));
+
+    if (ratings.length === 0) return;
+
+    try {
+      await api.submitFeedback(orderId, ratings);
+      document.getElementById("feedback-thanks").classList.remove("hidden");
+      document.getElementById("submit-feedback-btn").disabled = true;
+    } catch (err) {
+      alert(err.message || "Couldn't submit feedback.");
+    }
+  };
+
+  async function loadInitialStatus() {
+    try {
+      const { orders } = await api.getOrdersForTable(tableNumber);
+      const order = orderId ? orders.find((o) => o._id === orderId) : orders[0];
+      if (order) {
+        paintStatus(order.status);
+        renderOrderDetails(order);
+      } else {
+        document.getElementById("status-message").textContent = "No recent order found for this table.";
+      }
+    } catch (err) {
+      document.getElementById("status-message").textContent = "Couldn't load order status.";
+    }
+  }
+
+  // Always load the current status via a normal API call first - this must
+  // work regardless of whether live updates are available.
+  loadInitialStatus();
+
+  // Live updates via Socket.io (best-effort - falls back to polling below if unavailable)
+  const socket = connectAsCustomer(tableNumber, (order) => {
+    if (!orderId || order._id === orderId) {
+      paintStatus(order.status);
+      renderOrderDetails(order);
+    }
+  });
+
+  // Fallback: if sockets aren't connected, poll every 8s so status still updates
+  setInterval(() => {
+    if (!socket || !socket.connected) {
+      loadInitialStatus();
+    }
+  }, 8000);
+</script>
+</body>
+</html>

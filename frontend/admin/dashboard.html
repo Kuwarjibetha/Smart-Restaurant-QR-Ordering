@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kitchen Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="../js/socket.io.min.js"></script>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<header class="sticky top-0 z-30" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
+  <div class="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
+    <div>
+      <p class="eyebrow">Kitchen</p>
+      <h1 class="display text-2xl">Live Orders</h1>
+    </div>
+    <nav class="flex items-center gap-4 text-sm font-semibold">
+      <span id="welcome" style="color: var(--charcoal-soft);"></span>
+      <a href="menu-manage.html" style="color: var(--charcoal); text-decoration:none;">Menu</a>
+      <a href="tables.html" style="color: var(--charcoal); text-decoration:none;">Table QR codes</a>
+      <a href="analytics.html" id="analytics-link" style="color: var(--charcoal); text-decoration:none;">Analytics</a>
+      <button id="logout-btn" class="btn-secondary px-3 py-1.5">Log out</button>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-5 py-8">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div>
+      <h2 class="eyebrow mb-3">📝 Placed</h2>
+      <div id="col-placed" class="space-y-3"></div>
+    </div>
+    <div>
+      <h2 class="eyebrow mb-3">🔥 Preparing</h2>
+      <div id="col-preparing" class="space-y-3"></div>
+    </div>
+    <div>
+      <h2 class="eyebrow mb-3">🍽️ Served</h2>
+      <div id="col-served" class="space-y-3"></div>
+    </div>
+  </div>
+</main>
+
+<script src="../js/api.js"></script>
+<script src="../js/socketClient.js"></script>
+<script>
+  if (!localStorage.getItem("adminToken")) {
+    window.location.href = "login.html";
+  }
+  document.getElementById("welcome").textContent = `Hi, ${localStorage.getItem("adminName") || "there"}`;
+  if (localStorage.getItem("adminRole") !== "owner") {
+    document.getElementById("analytics-link").remove();
+  }
+
+  document.getElementById("logout-btn").onclick = () => {
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminRole");
+    localStorage.removeItem("adminName");
+    window.location.href = "login.html";
+  };
+
+  const ordersById = new Map();
+  const NEXT_STATUS = { placed: "preparing", preparing: "served" };
+  const NEXT_LABEL = { placed: "Start preparing", preparing: "Mark served" };
+
+  function orderCard(order) {
+    const card = document.createElement("div");
+    card.className = "card p-4";
+    const nextStatus = NEXT_STATUS[order.status];
+    card.innerHTML = `
+      <div class="flex justify-between items-start mb-2">
+        <span class="font-semibold">Table ${order.tableNumber}</span>
+        <span class="text-xs" style="color: var(--charcoal-soft)">${new Date(order.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+      </div>
+      <div class="text-sm mb-3" style="color: var(--charcoal-soft)">
+        ${order.items.map((i) => `${i.quantity} × ${i.name}`).join("<br/>")}
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="font-semibold text-sm">₹${order.totalAmount}</span>
+        ${nextStatus ? `<button class="btn-primary px-3 py-1.5 text-xs">${NEXT_LABEL[order.status]}</button>` : ""}
+      </div>
+    `;
+    if (nextStatus) {
+      card.querySelector("button").onclick = async () => {
+        try {
+          await api.updateOrderStatus(order._id, nextStatus);
+        } catch (err) {
+          alert(err.message || "Couldn't update order status.");
+        }
+      };
+    }
+    return card;
+  }
+
+  function renderColumns() {
+    const columns = { placed: document.getElementById("col-placed"), preparing: document.getElementById("col-preparing"), served: document.getElementById("col-served") };
+    Object.values(columns).forEach((c) => (c.innerHTML = ""));
+
+    const sorted = Array.from(ordersById.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    sorted.forEach((order) => {
+      const col = columns[order.status];
+      if (col) col.appendChild(orderCard(order));
+    });
+  }
+
+  async function loadInitialOrders() {
+    try {
+      const { orders } = await api.getAllOrders();
+      orders.forEach((o) => ordersById.set(o._id, o));
+      renderColumns();
+    } catch (err) {
+      if (err.message.includes("token") || err.message.includes("Unauthorized")) {
+        window.location.href = "login.html";
+      }
+    }
+  }
+
+  loadInitialOrders();
+
+  const socket = connectAsKitchen({
+    onNewOrder: (order) => { ordersById.set(order._id, order); renderColumns(); },
+    onStatusUpdate: (order) => { ordersById.set(order._id, order); renderColumns(); },
+  });
+
+  // Fallback: if sockets aren't connected, poll every 8s so the board still updates
+  setInterval(() => {
+    if (!socket || !socket.connected) {
+      loadInitialOrders();
+    }
+  }, 8000);
+</script>
+</body>
+</html>

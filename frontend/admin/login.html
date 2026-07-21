@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body class="min-h-screen flex items-center justify-center px-5">
+
+<div class="card p-8 w-full max-w-sm">
+  <p class="eyebrow mb-1">Restaurant QR</p>
+  <h1 class="display text-2xl mb-6">Staff sign in</h1>
+
+  <label class="text-sm font-semibold block mb-1">Email</label>
+  <input id="email" type="email" class="w-full px-3 py-2 rounded-lg text-sm mb-4" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" placeholder="owner@restaurant.com" />
+
+  <label class="text-sm font-semibold block mb-1">Password</label>
+  <input id="password" type="password" class="w-full px-3 py-2 rounded-lg text-sm mb-2" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" placeholder="••••••••" />
+
+  <p id="error-msg" class="text-sm mb-3 hidden" style="color: var(--chili)"></p>
+
+  <button id="login-btn" class="btn-primary w-full py-3 mt-2">Sign in</button>
+
+  <p class="text-sm text-center mt-4" style="color: var(--charcoal-soft)">
+    Setting up this restaurant for the first time? <a href="signup.html" style="color: var(--charcoal); font-weight:600; text-decoration:none;">Create owner account</a>
+  </p>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  document.getElementById("login-btn").onclick = async () => {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const errorEl = document.getElementById("error-msg");
+    const btn = document.getElementById("login-btn");
+
+    errorEl.classList.add("hidden");
+    if (!email || !password) return;
+
+    btn.disabled = true;
+    btn.textContent = "Signing in…";
+
+    try {
+      const { admin, token } = await api.login(email, password);
+      localStorage.setItem("adminToken", token);
+      localStorage.setItem("adminRole", admin.role);
+      localStorage.setItem("adminName", admin.name);
+      window.location.href = "dashboard.html";
+    } catch (err) {
+      errorEl.textContent = err.message || "Login failed. Check your credentials.";
+      errorEl.classList.remove("hidden");
+      btn.disabled = false;
+      btn.textContent = "Sign in";
+    }
+  };
+
+  document.getElementById("password").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("login-btn").click();
+  });
+</script>
+</body>
+</html>
