@@ -39,6 +39,18 @@
     <div id="recommend-results" class="mt-3 flex flex-wrap"></div>
   </section>
 
+  <!-- Dietary / allergen Q&A -->
+  <section class="card p-5 mb-8">
+    <p class="eyebrow mb-2">Allergy or dietary question?</p>
+    <p class="text-sm mb-3" style="color: var(--charcoal-soft)">Ask about a specific dish — e.g. "does the Butter Chicken have nuts?" or "what's vegan here?"</p>
+    <div class="flex gap-2">
+      <input id="ask-menu-input" type="text" placeholder="e.g. is the Masala Dosa gluten-free?"
+        class="flex-1 px-3 py-2 rounded-lg text-sm" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" />
+      <button id="ask-menu-btn" class="btn-primary px-4 py-2 text-sm">Ask</button>
+    </div>
+    <div id="ask-menu-result" class="mt-3"></div>
+  </section>
+
   <div id="menu-container">
     <p style="color: var(--charcoal-soft)">Loading menu…</p>
   </div>
@@ -47,7 +59,15 @@
 <script src="../js/api.js"></script>
 <script src="../js/cart.js"></script>
 <script src="../js/recommend.js"></script>
+<script src="../js/askMenu.js"></script>
 <script>
+  document.getElementById("ask-menu-btn").onclick = () => {
+    handleAskMenuSubmit(document.getElementById("ask-menu-input"), document.getElementById("ask-menu-result"));
+  };
+  document.getElementById("ask-menu-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("ask-menu-btn").click();
+  });
+
   const tableNumber = getTableNumberFromUrl() || 1; // fallback for testing without a real QR scan
   document.getElementById("table-label").textContent = `Table ${tableNumber}`;
   document.getElementById("cart-link").href = `cart.html?table=${tableNumber}`;

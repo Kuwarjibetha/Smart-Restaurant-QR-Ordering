@@ -1,4 +1,5 @@
 const MenuItem = require("../models/MenuItem");
+const { getDietaryAnswer } = require("../utils/geminiClient");
 
 // GET /api/menu (public) - full menu, optionally filter by category/availability
 async function getMenu(req, res) {
@@ -28,7 +29,7 @@ async function getMenuItem(req, res) {
 // POST /api/menu (admin only)
 async function createMenuItem(req, res) {
   try {
-    const { name, category, price, isVeg, imageUrl, avgPrepTimeMinutes } = req.body;
+    const { name, category, price, isVeg, imageUrl, avgPrepTimeMinutes, allergens, dietaryTags } = req.body;
     if (!name || !category || price == null) {
       return res.status(400).json({ error: "name, category, and price are required" });
     }
@@ -40,6 +41,8 @@ async function createMenuItem(req, res) {
       isVeg: isVeg !== undefined ? isVeg : true,
       imageUrl: imageUrl || "",
       avgPrepTimeMinutes: avgPrepTimeMinutes || 12,
+      allergens: Array.isArray(allergens) ? allergens : [],
+      dietaryTags: Array.isArray(dietaryTags) ? dietaryTags : [],
     });
 
     res.status(201).json({ item });
@@ -59,6 +62,8 @@ async function updateMenuItem(req, res) {
       "imageUrl",
       "available",
       "avgPrepTimeMinutes",
+      "allergens",
+      "dietaryTags",
     ];
     const updates = {};
     for (const field of allowedFields) {
@@ -88,10 +93,39 @@ async function deleteMenuItem(req, res) {
   }
 }
 
+// POST /api/menu/ask (public, rate-limited)
+// Answers dietary/allergen questions strictly from verified menu data -
+// never lets Gemini guess or infer ingredients it wasn't given.
+async function askMenu(req, res) {
+  try {
+    const { question } = req.body;
+    if (!question || typeof question !== "string" || !question.trim()) {
+      return res.status(400).json({ error: "question is required" });
+    }
+    if (question.length > 300) {
+      return res.status(400).json({ error: "question is too long (max 300 characters)" });
+    }
+
+    const menuItems = await MenuItem.find({ available: true });
+    if (menuItems.length === 0) {
+      return res.json({
+        answer: "The menu is empty right now, so I can't check that — please ask staff.",
+      });
+    }
+
+    const answer = await getDietaryAnswer(question, menuItems);
+    res.json({ answer });
+  } catch (err) {
+    console.error("Ask menu error:", err.response?.data || err.message);
+    res.status(500).json({ error: "Failed to answer question", details: err.message });
+  }
+}
+
 module.exports = {
   getMenu,
   getMenuItem,
   createMenuItem,
   updateMenuItem,
   deleteMenuItem,
+  askMenu,
 };

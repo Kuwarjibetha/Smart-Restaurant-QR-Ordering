@@ -11,6 +11,17 @@ const recommendLimiter = rateLimit({
   },
 });
 
+// Protects /api/menu/ask from abuse since every call costs a Gemini API request
+const askMenuLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: "Too many questions. Please wait a moment and try again.",
+  },
+});
+
 // General light protection for public ordering endpoints
 const orderLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -20,4 +31,4 @@ const orderLimiter = rateLimit({
   message: { error: "Too many requests. Please slow down." },
 });
 
-module.exports = { recommendLimiter, orderLimiter };
+module.exports = { recommendLimiter, orderLimiter, askMenuLimiter };

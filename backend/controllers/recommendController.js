@@ -31,7 +31,6 @@ async function recommend(req, res) {
 
     res.json({ suggestions: validMatches });
   } catch (err) {
-    console.error("Recommend error:", err.response?.data || err.message);
     res.status(500).json({ error: "Failed to get recommendations", details: err.message });
   }
 }

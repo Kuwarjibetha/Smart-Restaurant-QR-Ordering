@@ -57,6 +57,19 @@ const menuItemSchema = new mongoose.Schema(
       min: 1,
       default: 12,
     },
+    // Manually entered by the restaurant owner/admin - never inferred by AI.
+    // This is the trust boundary for the dietary Q&A feature: the chat
+    // assistant only ever answers from this verified data, never guesses.
+    allergens: {
+      type: [String],
+      default: [],
+      // e.g. ["nuts", "dairy", "egg", "soy", "gluten", "shellfish", "sesame"]
+    },
+    dietaryTags: {
+      type: [String],
+      default: [],
+      // e.g. ["vegan", "vegetarian", "jain", "gluten-free"]
+    },
     ratings: [ratingSchema],
   },
   { timestamps: true }

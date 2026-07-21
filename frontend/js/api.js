@@ -40,6 +40,9 @@ const api = {
   // Recommend
   recommend: (preferenceText) => apiRequest("/recommend", { method: "POST", body: { preferenceText } }),
 
+  // Dietary / allergen Q&A
+  askMenu: (question) => apiRequest("/menu/ask", { method: "POST", body: { question } }),
+
   // Tables
   getTables: () => apiRequest("/tables", { auth: true }),
   createTable: (tableNumber) => apiRequest("/tables", { method: "POST", body: { tableNumber }, auth: true }),
