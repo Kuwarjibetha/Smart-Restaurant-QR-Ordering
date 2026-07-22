@@ -27,6 +27,9 @@
 
 <main class="max-w-2xl mx-auto px-5 pb-32 pt-6">
 
+  <!-- Group ordering -->
+  <section id="group-order-banner" class="card p-5 mb-8"></section>
+
   <!-- AI recommendation -->
   <section class="card p-5 mb-8">
     <p class="eyebrow mb-2">Not sure what to get?</p>
@@ -60,6 +63,9 @@
 <script src="../js/cart.js"></script>
 <script src="../js/recommend.js"></script>
 <script src="../js/askMenu.js"></script>
+<script src="../js/socket.io.min.js"></script>
+<script src="../js/socketClient.js"></script>
+<script src="../js/groupOrder.js"></script>
 <script>
   document.getElementById("ask-menu-btn").onclick = () => {
     handleAskMenuSubmit(document.getElementById("ask-menu-input"), document.getElementById("ask-menu-result"));
@@ -116,13 +122,20 @@
             </div>
             <button class="btn-primary px-4 py-2 text-sm" ${!item.available ? "disabled" : ""}>Add</button>
           `;
-          row.querySelector("button").onclick = () => {
-            addToCart(tableNumber, item, 1);
-            refreshCartBadge();
+          row.querySelector("button").onclick = async () => {
             const btn = row.querySelector("button");
             const original = btn.textContent;
-            btn.textContent = "Added ✓";
-            setTimeout(() => (btn.textContent = original), 900);
+            try {
+              const handledByGroup = await groupOrderAddItem(item);
+              if (!handledByGroup) {
+                addToCart(tableNumber, item, 1);
+                refreshCartBadge();
+              }
+              btn.textContent = "Added ✓";
+              setTimeout(() => (btn.textContent = original), 900);
+            } catch (err) {
+              alert(err.message);
+            }
           };
           list.appendChild(row);
         });
@@ -144,6 +157,13 @@
 
   refreshCartBadge();
   loadMenu();
+  initGroupOrder(tableNumber, document.getElementById("group-order-banner")).then((isGroupMode) => {
+    if (isGroupMode) {
+      // The shared cart replaces the private one for this session - hide
+      // the private cart icon so it's not confusing to have two carts.
+      document.getElementById("cart-link").style.display = "none";
+    }
+  });
 </script>
 </body>
 </html>

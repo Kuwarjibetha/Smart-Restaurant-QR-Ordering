@@ -1,6 +1,3 @@
-// cart.js — manages the customer's cart in localStorage, scoped per table
-// so if two tables use the same device (unlikely, but safe), carts don't mix.
-
 function getTableNumberFromUrl() {
   const match = window.location.pathname.match(/table\/(\d+)/) ||
                 window.location.search.match(/[?&]table=(\d+)/);

@@ -1,7 +1,8 @@
 const Table = require("../models/Table");
 const { generateTableQR } = require("../utils/generateQR");
 
-// POST /api/tables (admin only) - generate a new table + QR code
+// POST /api/tables (admin)  naya table banaye aur uska QR code generate kare
+// Simple: admin table number bhejega, backend check karega aur QR link banake table save karega
 async function createTable(req, res) {
   try {
     const { tableNumber } = req.body;
@@ -23,7 +24,8 @@ async function createTable(req, res) {
   }
 }
 
-// GET /api/tables (admin only) - list all tables
+// GET /api/tables (admin )  saare tables ka list le aao
+// Yeh route admin ke liye hai, table data retrieve karega aur tableNumber ke hisaab se sort karega
 async function getTables(req, res) {
   try {
     const tables = await Table.find().sort({ tableNumber: 1 });
@@ -33,7 +35,8 @@ async function getTables(req, res) {
   }
 }
 
-// PATCH /api/tables/:id (admin only) - deactivate/reactivate a table
+// PATCH /api/tables/:id (admin)  table ko deactivate ya reactivate kare
+// Admin request bhejega jisme isActive true/false hoga, backend usi table ki state update karega
 async function updateTable(req, res) {
   try {
     const { isActive } = req.body;
@@ -49,4 +52,5 @@ async function updateTable(req, res) {
   }
 }
 
+// Export functions so routes can use them
 module.exports = { createTable, getTables, updateTable };

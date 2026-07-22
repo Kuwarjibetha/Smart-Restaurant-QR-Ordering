@@ -1,8 +1,7 @@
 const Order = require("../models/Order");
 const MenuItem = require("../models/MenuItem");
 
-// GET /api/analytics/sales (owner only)
-// Optional query params: from, to (ISO date strings)
+
 async function getSalesReport(req, res) {
   try {
     const match = { status: "served" };
@@ -17,7 +16,7 @@ async function getSalesReport(req, res) {
     const totalRevenue = orders.reduce((sum, o) => sum + o.totalAmount, 0);
     const totalOrders = orders.length;
 
-    // Dish-wise sales breakdown
+    // item-by-item sales totals
     const dishSales = {};
     for (const order of orders) {
       for (const item of order.items) {
@@ -32,7 +31,7 @@ async function getSalesReport(req, res) {
       .sort((a, b) => b.quantitySold - a.quantitySold)
       .slice(0, 10);
 
-    // Average dish ratings across the menu
+    // customer feedback summary
     const menuItems = await MenuItem.find({ "ratings.0": { $exists: true } });
     const dishRatings = menuItems.map((item) => {
       const avg =

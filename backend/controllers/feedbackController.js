@@ -1,8 +1,6 @@
 const MenuItem = require("../models/MenuItem");
 const Order = require("../models/Order");
 
-// POST /api/feedback (public) - submit dish-wise rating after an order
-// body: { orderId, ratings: [{ menuItemId, stars, comment }] }
 async function submitFeedback(req, res) {
   try {
     const { orderId, ratings } = req.body;
@@ -14,13 +12,13 @@ async function submitFeedback(req, res) {
     const order = await Order.findById(orderId);
     if (!order) return res.status(404).json({ error: "Order not found" });
 
-    // Only allow rating dishes that were actually part of this order
+    // Sirf wahi dishes rate karne do jo is order mein hain
     const orderedItemIds = new Set(order.items.map((i) => i.menuItemId.toString()));
 
     const results = [];
     for (const r of ratings) {
       if (!orderedItemIds.has(String(r.menuItemId))) {
-        continue; // skip dishes not in this order - prevents rating spam on arbitrary items
+        continue; // skip dishes not in this order 
       }
       const stars = Math.min(5, Math.max(1, parseInt(r.stars, 10) || 0));
       if (!stars) continue;

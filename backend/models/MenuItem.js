@@ -32,7 +32,7 @@ const menuItemSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      trim: true, // e.g. starters, main course, drinks, desserts
+      trim: true, //  starters, main course, drinks, desserts
     },
     price: {
       type: Number,
@@ -57,30 +57,37 @@ const menuItemSchema = new mongoose.Schema(
       min: 1,
       default: 12,
     },
-    // Manually entered by the restaurant owner/admin - never inferred by AI.
-    // This is the trust boundary for the dietary Q&A feature: the chat
-    // assistant only ever answers from this verified data, never guesses.
     allergens: {
       type: [String],
       default: [],
-      // e.g. ["nuts", "dairy", "egg", "soy", "gluten", "shellfish", "sesame"]
+      //  ["nuts", "dairy", "egg", "soy", "gluten", "shellfish", "sesame"]
     },
     dietaryTags: {
       type: [String],
       default: [],
-      // e.g. ["vegan", "vegetarian", "jain", "gluten-free"]
+      // ["vegan", "vegetarian", "jain", "gluten-free"]
     },
     ratings: [ratingSchema],
   },
   { timestamps: true }
 );
 
-// Virtual for quick average rating (not stored, computed on read)
-menuItemSchema.virtual("averageRating").get(function () {
+
+
+
+
+
+menuItemSchema.virtual("averageRating").get(function () { // Virtual for quick average rating 
+
   if (!this.ratings || this.ratings.length === 0) return null;
+
   const sum = this.ratings.reduce((acc, r) => acc + r.stars, 0);
+
   return Number((sum / this.ratings.length).toFixed(2));
 });
+
+
+
 
 menuItemSchema.set("toJSON", { virtuals: true });
 menuItemSchema.set("toObject", { virtuals: true });

@@ -43,6 +43,17 @@ const api = {
   // Dietary / allergen Q&A
   askMenu: (question) => apiRequest("/menu/ask", { method: "POST", body: { question } }),
 
+  // Group ordering
+  createGroupSession: (tableNumber, hostDeviceId, hostName) =>
+    apiRequest("/sessions", { method: "POST", body: { tableNumber, hostDeviceId, hostName } }),
+  getGroupSession: (code) => apiRequest(`/sessions/${code}`),
+  addSessionItem: (code, menuItemId, quantity, deviceId, name) =>
+    apiRequest(`/sessions/${code}/items`, { method: "POST", body: { menuItemId, quantity, deviceId, name } }),
+  removeSessionItem: (code, itemId, deviceId, hostToken) =>
+    apiRequest(`/sessions/${code}/items/${itemId}`, { method: "DELETE", body: { deviceId, hostToken } }),
+  confirmGroupSession: (code, hostToken) =>
+    apiRequest(`/sessions/${code}/confirm`, { method: "PATCH", body: { hostToken } }),
+
   // Tables
   getTables: () => apiRequest("/tables", { auth: true }),
   createTable: (tableNumber) => apiRequest("/tables", { method: "POST", body: { tableNumber }, auth: true }),

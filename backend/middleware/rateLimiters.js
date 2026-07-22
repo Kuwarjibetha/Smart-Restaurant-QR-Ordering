@@ -31,4 +31,15 @@ const orderLimiter = rateLimit({
   message: { error: "Too many requests. Please slow down." },
 });
 
-module.exports = { recommendLimiter, orderLimiter, askMenuLimiter };
+// Higher limit for GET /api/sessions/:code - this gets polled every few
+// seconds per device as a fallback if a phone's socket connection drops,
+// so it needs more headroom than the mutating session endpoints.
+const sessionPollLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests. Please slow down." },
+});
+
+module.exports = { recommendLimiter, askMenuLimiter, orderLimiter, sessionPollLimiter };

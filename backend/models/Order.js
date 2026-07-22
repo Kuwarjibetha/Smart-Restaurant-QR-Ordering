@@ -9,7 +9,7 @@ const orderItemSchema = new mongoose.Schema(
     },
     name: { type: String, required: true },
     quantity: { type: Number, required: true, min: 1 },
-    price: { type: Number, required: true, min: 0 }, // price snapshot at order time (server-calculated)
+    price: { type: Number, required: true, min: 0 }, // price snapshot at order time
   },
   { _id: false }
 );

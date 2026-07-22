@@ -1,7 +1,7 @@
 const MenuItem = require("../models/MenuItem");
 const { getDietaryAnswer } = require("../utils/geminiClient");
 
-// GET /api/menu (public) - full menu, optionally filter by category/availability
+// get /api/menu (public) full menu, optionally filter by category or availability
 async function getMenu(req, res) {
   try {
     const filter = {};
@@ -15,7 +15,7 @@ async function getMenu(req, res) {
   }
 }
 
-// GET /api/menu/:id (public)
+// GET /api/menu/:id (public)  ek specific menu item le aao
 async function getMenuItem(req, res) {
   try {
     const item = await MenuItem.findById(req.params.id);
@@ -26,7 +26,7 @@ async function getMenuItem(req, res) {
   }
 }
 
-// POST /api/menu (admin only)
+// POST /api/menu (admin only) naya menu item add karo
 async function createMenuItem(req, res) {
   try {
     const { name, category, price, isVeg, imageUrl, avgPrepTimeMinutes, allergens, dietaryTags } = req.body;
@@ -51,7 +51,7 @@ async function createMenuItem(req, res) {
   }
 }
 
-// PATCH /api/menu/:id (admin only) - edit item or mark out-of-stock
+// PATCH /api/menu/:id (admin only)  item edit karo ya out-of-stock mark karo
 async function updateMenuItem(req, res) {
   try {
     const allowedFields = [
@@ -82,7 +82,7 @@ async function updateMenuItem(req, res) {
   }
 }
 
-// DELETE /api/menu/:id (admin only)
+// delete /api/menu/:id (admin)  menu item delete karo
 async function deleteMenuItem(req, res) {
   try {
     const item = await MenuItem.findByIdAndDelete(req.params.id);
@@ -94,8 +94,8 @@ async function deleteMenuItem(req, res) {
 }
 
 // POST /api/menu/ask (public, rate-limited)
-// Answers dietary/allergen questions strictly from verified menu data -
-// never lets Gemini guess or infer ingredients it wasn't given.
+// Is route ka purpose allergy/dietary questions ka jawab dena hai.
+// Sirf verified menu data se hi answer deta hai, Gemini ko guess karne nahi deta.
 async function askMenu(req, res) {
   try {
     const { question } = req.body;

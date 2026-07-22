@@ -9,7 +9,7 @@ function signToken(admin) {
   );
 }
 
-// POST /api/auth/register  (owner-only in practice - protect this route or disable after first setup)
+// post /api/auth/register  
 async function register(req, res) {
   try {
     const { name, email, password, role } = req.body;
@@ -36,7 +36,7 @@ async function register(req, res) {
   }
 }
 
-// POST /api/auth/login
+// post /api/auth/login
 async function login(req, res) {
   try {
     const { email, password } = req.body;
@@ -61,7 +61,7 @@ async function login(req, res) {
   }
 }
 
-// GET /api/auth/me
+// get /api/auth/me
 async function me(req, res) {
   res.json({ admin: req.admin });
 }

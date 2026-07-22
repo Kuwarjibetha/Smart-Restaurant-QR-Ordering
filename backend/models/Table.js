@@ -8,11 +8,11 @@ const tableSchema = new mongoose.Schema(
       unique: true,
     },
     qrCodeUrl: {
-      type: String, // base64 data URL or hosted image URL of the QR code
+      type: String, 
       required: true,
     },
     tableUrl: {
-      type: String, // the actual URL the QR code points to, e.g. /table/12
+      type: String, 
       required: true,
     },
     isActive: {

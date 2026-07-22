@@ -1,8 +1,3 @@
-/**
- * Run with: npm run seed
- * Populates the database with a sample owner account, a few tables (with QR codes),
- * and a starter menu so you can test the API immediately.
- */
 require("dotenv").config();
 const mongoose = require("mongoose");
 const Admin = require("../models/Admin");
@@ -14,8 +9,8 @@ async function seed() {
   await mongoose.connect(process.env.MONGO_URI);
   console.log("Connected. Seeding...");
 
-  // Owner admin
-  const ownerEmail = "owner@restaurant.com";
+
+  const ownerEmail = "owner@restaurant.com"; // Owner admin
   const existingOwner = await Admin.findOne({ email: ownerEmail });
   if (!existingOwner) {
     await Admin.create({

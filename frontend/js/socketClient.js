@@ -68,3 +68,32 @@ function connectAsKitchen({ onNewOrder, onStatusUpdate }) {
     return null;
   }
 }
+
+// Every phone viewing a group order connects here - joins that session's
+// own room so shared-cart updates only reach that group, not everyone.
+function connectToGroupSession(sessionCode, { onSessionUpdate, onSessionConfirmed }) {
+  if (typeof io === "undefined") {
+    console.warn("Socket.io not available - falling back to manual polling for this group order.");
+    return null;
+  }
+
+  try {
+    const socket = io(SOCKET_URL, { reconnectionAttempts: 5, timeout: 5000 });
+
+    socket.on("connect", () => {
+      socket.emit("joinSession", sessionCode);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.warn("Socket connection failed:", err.message);
+    });
+
+    if (onSessionUpdate) socket.on("sessionUpdate", onSessionUpdate);
+    if (onSessionConfirmed) socket.on("sessionConfirmed", onSessionConfirmed);
+
+    return socket;
+  } catch (err) {
+    console.warn("Could not set up live updates:", err.message);
+    return null;
+  }
+}

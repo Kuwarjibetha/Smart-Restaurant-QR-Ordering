@@ -1,9 +1,10 @@
+// authMiddleware.js — protects admin routes and enforces role-based access.
 const jwt = require("jsonwebtoken");
 const Admin = require("../models/Admin");
 
 /**
  * Verifies the JWT sent in the Authorization header (Bearer token).
- * Attaches the authenticated admin (without password) to req.admin.
+ * Admin ke liye access control establish karta hai, aur req.admin set karta hai.
  */
 async function requireAuth(req, res, next) {
   try {
