@@ -54,6 +54,14 @@ const api = {
   confirmGroupSession: (code, hostToken) =>
     apiRequest(`/sessions/${code}/confirm`, { method: "PATCH", body: { hostToken } }),
 
+  // Smart meal planner
+  planMeal: (peopleCount, budget, mealType, dietPreference) =>
+    apiRequest("/plan-meal", { method: "POST", body: { peopleCount, budget, mealType, dietPreference } }),
+
+  // Waiter calls
+  createWaiterCall: (tableNumber, requestType) =>
+    apiRequest("/waiter-call", { method: "POST", body: { tableNumber, requestType } }),
+
   // Tables
   getTables: () => apiRequest("/tables", { auth: true }),
   createTable: (tableNumber) => apiRequest("/tables", { method: "POST", body: { tableNumber }, auth: true }),

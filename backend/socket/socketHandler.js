@@ -75,10 +75,28 @@ function emitSessionConfirmed(io, sessionCode, order) {
   io.to(`session-${sessionCode}`).emit("sessionConfirmed", order);
 }
 
+// ── Waiter Call System ──────────────────────────────────────────────────
+// Called by waiterCallController right after a new call is saved to the DB.
+// Pushes the new call to every connected kitchen/admin dashboard.
+function emitNewWaiterCall(io, call) {
+  io.to("kitchen").emit("newWaiterCall", call);
+}
+
+// Called by waiterCallController right after a call is marked resolved.
+// Tells the kitchen dashboards to remove it, and tells the originating
+// table's customer socket(s) their request was handled.
+function emitWaiterCallResolved(io, call) {
+  io.to("kitchen").emit("waiterCallResolvedBroadcast", { callId: call._id });
+  io.to(`table-${call.tableNumber}`).emit("waiterCallResolved", { callId: call._id });
+}
+// ──────────────────────────────────────────────────────────────────────────
+
 module.exports = {
   initSocket,
   emitNewOrder,
   emitOrderStatusUpdate,
   emitSessionUpdate,
   emitSessionConfirmed,
+  emitNewWaiterCall,
+  emitWaiterCallResolved,
 };

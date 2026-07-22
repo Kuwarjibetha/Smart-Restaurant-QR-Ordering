@@ -1,10 +1,33 @@
 # Smart Restaurant QR Ordering — Backend
 
-Node.js + Express + MongoDB (Mongoose) + Socket.io backend for the QR ordering
-system described in the project research doc. This covers everything except
-the frontend (customer & admin UI), which comes next.
+This backend is the API server for a smart restaurant QR ordering system.
+It uses Node.js, Express, MongoDB (Mongoose), Socket.io, JWT auth, and Gemini
+AI for menu recommendations and dietary questions.
 
-## 1. Setup
+## What the backend does
+
+- Hosts REST API routes for menu, orders, tables, feedback, auth, and analytics.
+- Generates QR codes for tables and stores them with table records.
+- Uses Socket.io for live order status updates to customers and the kitchen.
+- Calls Gemini AI for menu recommendations and dietary/allergy answers.
+- Enforces admin and owner permissions for sensitive routes.
+- Recalculates prices server-side and verifies data to prevent client tampering.
+
+## Tech stack
+
+- Node.js (>=18)
+- Express
+- MongoDB with Mongoose
+- Socket.io
+- JSON Web Tokens (JWT)
+- bcrypt for password hashing
+- dotenv for environment configuration
+- express-rate-limit for rate limiting
+- axios for Gemini HTTP requests
+- qrcode for QR generation
+- nodemon in development
+
+## Setup
 
 ```bash
 cd backend
@@ -12,147 +35,164 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env` and fill in:
-- `MONGO_URI` — your MongoDB Atlas connection string
-- `JWT_SECRET` — any long random string
-- `GEMINI_API_KEY` — your Gemini API key
-- `FRONTEND_URL` — where your frontend will run (used for CORS + QR code links)
+Then edit `.env` and set:
 
-## 2. Seed sample data (recommended for first run)
+- `MONGO_URI` — MongoDB connection string
+- `JWT_SECRET` — secure random string for JWT signing
+- `GEMINI_API_KEY` — Google Gemini API key
+- `FRONTEND_URL` — frontend host used for CORS and QR links
+- `PORT` — optional backend port (default: `5000`)
+
+## Seed demo data
 
 ```bash
 npm run seed
 ```
 
 This creates:
-- Owner login: `owner@restaurant.com` / `password123`
-- Kitchen login: `kitchen@restaurant.com` / `password123`
-- Tables 1–5 with QR codes
-- A starter menu (8 items across Starters/Main Course/Desserts/Drinks)
 
-## 3. Run the server
+- Owner admin: `owner@restaurant.com` / `password123`
+- Kitchen admin: `kitchen@restaurant.com` / `password123`
+- Tables 1–5 with generated QR codes
+- Starter menu items across Starters, Main Course, Desserts, Drinks
+
+## Run the server
 
 ```bash
-npm run dev     # with nodemon, auto-restart on changes
-# or
+npm run dev
+```
+
+Or start without watch mode:
+
+```bash
 npm start
 ```
 
-Server runs on `http://localhost:5000` by default. Check `GET /api/health`.
+The server listens on `http://localhost:5000` by default.
 
-## 4. Authentication
+## Environment variables
 
-Admin/kitchen routes require a `Bearer` token from `/api/auth/login`:
+- `MONGO_URI` — MongoDB URI
+- `JWT_SECRET` — JWT secret
+- `GEMINI_API_KEY` — Gemini API key
+- `FRONTEND_URL` — frontend origin for CORS and QR page URLs
+- `PORT` — optional server port
+- `DEFAULT_PREP_TIME_MINUTES` — fallback prep time for wait-time estimation
 
-```
-Authorization: Bearer <token>
-```
+## API overview
 
-Customers never log in — the QR code itself identifies the table.
+### Authentication
 
-## 5. API Reference
+- `POST /api/auth/register` — create a new admin account
+- `POST /api/auth/login` — login and receive JWT
+- `GET /api/auth/me` — current admin data (requires auth)
 
-| Route | Method | Access | Purpose |
-|---|---|---|---|
-| `/api/auth/register` | POST | Public* | Create an admin account |
-| `/api/auth/login` | POST | Public | Admin/kitchen login → returns JWT |
-| `/api/auth/me` | GET | Admin | Get current logged-in admin |
-| `/api/menu` | GET | Public | Get full menu (supports `?category=` `?available=true`) |
-| `/api/menu/:id` | GET | Public | Get single menu item |
-| `/api/menu` | POST | Admin | Add new item |
-| `/api/menu/:id` | PATCH | Admin | Edit item / mark out-of-stock |
-| `/api/menu/:id` | DELETE | Admin | Remove item |
-| `/api/orders` | POST | Public | Place a new order |
-| `/api/orders` | GET | Admin | List all orders (dashboard feed) |
-| `/api/orders/table/:tableNumber` | GET | Public | Get live order status for a table |
-| `/api/orders/:id` | PATCH | Admin | Update order status |
-| `/api/recommend` | POST | Public (rate-limited) | AI-based dish recommendation |
-| `/api/tables` | POST | Admin | Generate new table + QR code |
-| `/api/tables` | GET | Admin | List all tables |
-| `/api/tables/:id` | PATCH | Admin | Activate/deactivate a table |
-| `/api/feedback` | POST | Public | Submit dish rating/feedback |
-| `/api/analytics/sales` | GET | Owner only | View sales report |
+> Note: protect or disable `/api/auth/register` after initial setup.
 
-\* Consider protecting/disabling `/api/auth/register` in production after
-creating your initial admin accounts, so random users can't self-register as kitchen/owner.
+### Menu management
 
-### Example: Place an order
+- `GET /api/menu` — list menu items
+- `GET /api/menu/:id` — item detail
+- `POST /api/menu` — add menu item (admin only)
+- `PATCH /api/menu/:id` — edit item or update availability (admin only)
+- `DELETE /api/menu/:id` — delete item (admin only)
+- `POST /api/menu/ask` — ask dietary/allergen questions (public, rate-limited)
+
+### Orders
+
+- `POST /api/orders` — place a customer order
+- `GET /api/orders/table/:tableNumber` — get a table's recent orders
+- `GET /api/orders` — list orders for admin dashboard
+- `PATCH /api/orders/:id` — update order status (admin only)
+
+### Tables
+
+- `POST /api/tables` — create table + QR code (admin only)
+- `GET /api/tables` — list tables (admin only)
+- `PATCH /api/tables/:id` — activate/deactivate table (admin only)
+
+### Recommendations and feedback
+
+- `POST /api/recommend` — Gemini-based menu recommendations
+- `POST /api/feedback` — submit order feedback and dish ratings
+
+### Analytics
+
+- `GET /api/analytics/sales` — sales report for owner only
+
+## Example requests
+
+### Order placement
 
 ```bash
 curl -X POST http://localhost:5000/api/orders \
   -H "Content-Type: application/json" \
   -d '{
-    "tableNumber": 3,
+    "tableNumber": 2,
     "items": [
-      { "menuItemId": "<menu_item_id>", "quantity": 2 }
+      { "menuItemId": "<id>", "quantity": 1 }
     ]
   }'
 ```
 
-Note: only `menuItemId` and `quantity` are read from the request — price and
-name are always recalculated server-side from the database, so a tampered
-request can't change what the customer is charged.
-
-### Example: AI recommendation
+### AI recommendation
 
 ```bash
 curl -X POST http://localhost:5000/api/recommend \
   -H "Content-Type: application/json" \
-  -d '{ "preferenceText": "something spicy and vegetarian, under 200 rupees" }'
+  -d '{ "preferenceText": "spicy veg, quick, under 200 rupees" }'
 ```
 
-Response only ever contains dish names that exist in your live menu — Gemini's
-suggestions are cross-checked against the database before being returned, so
-hallucinated dishes are filtered out.
+## How it works
 
-## 6. Real-time events (Socket.io)
+### Order flow
 
-Client connects to the same origin as the server.
+1. Customer posts order data with `tableNumber` and item IDs.
+2. Backend validates table and menu item availability.
+3. Price is recalculated using DB values; client prices are ignored.
+4. Estimated wait time is computed using current pending orders.
+5. Order record is created and broadcast to kitchen via Socket.io.
 
-**Customer side:**
-```js
-const socket = io("http://localhost:5000");
-socket.emit("joinTable", 12);
-socket.on("orderStatusUpdate", (order) => { /* update UI */ });
-```
+### Socket.io flow
 
-**Kitchen dashboard side:**
-```js
-const socket = io("http://localhost:5000");
-socket.emit("joinKitchen", jwtToken); // must be a valid admin token
-socket.on("newOrder", (order) => { /* add to dashboard */ });
-socket.on("orderStatusUpdate", (order) => { /* update dashboard */ });
-```
+- Customers join `table-<number>` rooms.
+- Kitchen dashboards join `kitchen` room after token validation.
+- New orders and status updates are emitted to the appropriate room(s).
 
-Rooms are scoped so a customer can only ever receive updates for their own
-table — never other tables' orders.
+### Gemini AI usage
 
-## 7. Security notes already built in
+- `recommend` route asks Gemini for matching dishes.
+- `askMenu` route asks Gemini dietary/allergy questions.
+- Gemini responses are filtered and verified so the app does not return
+  hallucinated dishes or unsupported answers.
 
-- Passwords hashed with bcrypt, never returned in API responses.
-- JWT auth + role-based access (`owner` vs `kitchen`) via middleware.
-- All prices/totals recalculated server-side — client-sent prices are ignored.
-- `/api/recommend` is rate-limited (8 req/min/IP) to control Gemini API costs.
-- Socket.io rooms prevent customers from subscribing to other tables' updates;
-  kitchen room requires a valid JWT to join.
-- Feedback can only be submitted for dishes that were actually part of the
-  referenced order.
+## Security and validation
 
-## 8. Folder structure
+- bcrypt hashes passwords.
+- JWTs protect admin endpoints.
+- Role-based access for `owner` and `kitchen` users.
+- Rate limiting protects Gemini routes from abuse.
+- Socket.io join events are checked so customers cannot join other tables.
+- Feedback is only accepted for dishes included in the referenced order.
+
+## Folder structure
 
 ```
 backend/
-├── models/          Table, MenuItem, Order, Admin (Mongoose schemas)
-├── routes/          Express route definitions per resource
-├── controllers/      Route handler logic
-├── middleware/       JWT auth, role checks, rate limiting
-├── utils/             Gemini client, QR generator, wait-time calc, seed script
-├── socket/            Socket.io connection + room-scoped event emitters
-└── server.js          App entry point
+├── controllers/        request handlers
+├── middleware/         auth and rate-limit middleware
+├── models/             Mongoose schemas
+├── routes/             Express route definitions
+├── socket/             Socket.io setup and emit helpers
+├── utils/              QR generation, Gemini client, wait-time logic, seeding
+└── server.js           app startup and route registration
 ```
 
-## 9. What's next (frontend)
+## Notes
 
-The frontend (customer menu/cart/order-status pages + admin dashboard) will
-connect to this API using the routes and Socket.io events documented above.
-Let me know when you're ready and we'll build that next.
+- Update `API_BASE` in the frontend if the backend is hosted somewhere else.
+- The app currently uses `http://localhost:5000` and `http://localhost:3000`
+  for local development.
+- `express-validator` is available in dependencies for future request validation,
+  though the current code uses manual validation.
+- If you deploy production, use HTTPS and strong `JWT_SECRET` / `GEMINI_API_KEY`.

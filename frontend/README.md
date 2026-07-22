@@ -1,66 +1,137 @@
 # Smart Restaurant QR Ordering — Frontend
 
-Plain HTML + Tailwind (CDN) + Vanilla JS, talking to the backend you already
-have running on `http://localhost:5000`.
+This frontend provides the customer and admin user experience for the QR
+ordering app. It is built with plain HTML, CSS, and vanilla JavaScript, and
+connects to the backend API for data, authentication, and live updates.
 
-## 1. Run it
+## What this frontend includes
 
-The frontend needs to be served (not opened directly as a `file://` URL) so
-that `fetch` and Socket.io work correctly with the backend's CORS settings.
+- Customer menu and cart pages
+- Order status tracking for customers
+- Admin login, dashboard, menu management, and analytics
+- AI recommendation and dietary question support
+- Local table-specific cart storage in `localStorage`
+- Socket.io live updates for order status and kitchen notifications
 
-From this `frontend/` folder:
+## How to run
+
+From the `frontend/` folder:
 
 ```bash
 python3 -m http.server 3000
 ```
 
-Then open:
-- **Customer menu**: http://localhost:3000/customer/menu.html?table=1
-- **Admin login**: http://localhost:3000/admin/login.html
+Then open one of the pages:
 
-This matches the `FRONTEND_URL=http://localhost:3000` in your backend's `.env`
-— if you serve it on a different port, update that value and restart the
-backend.
+- Customer menu: `http://localhost:3000/customer/menu.html?table=1`
+- Admin login: `http://localhost:3000/admin/login.html`
 
-## 2. Customer flow
+> The frontend must be served over HTTP (or HTTPS), not opened with `file://`.
+> This ensures fetch requests and Socket.io work properly.
 
-1. `customer/menu.html?table=<N>` — the page a QR code would open. Shows the
-   live menu, lets you add items to a cart (stored in `localStorage`,
-   scoped per table), and has the "what should I eat?" box wired to
-   `/api/recommend` (this needs a working Gemini key — see note below).
-2. `customer/cart.html?table=<N>` — review/adjust quantities, place the order.
-3. `customer/order-status.html?table=<N>&order=<id>` — live status via
-   Socket.io (Placed → Preparing → Served), plus a dish-rating form once
-   the order is served.
+## Required backend configuration
 
-## 3. Admin flow
+The frontend assumes the backend API is available at `http://localhost:5000`.
+If your backend runs elsewhere, update:
 
-1. `admin/login.html` — sign in with a seeded account:
-   - Owner: `owner@restaurant.com` / `password123`
-   - Kitchen: `kitchen@restaurant.com` / `password123`
-2. `admin/dashboard.html` — live kanban of orders (Placed / Preparing /
-   Served) via Socket.io, with one-click status advancement.
-3. `admin/menu-manage.html` — add dishes, mark items out of stock, remove
-   items.
-4. `admin/analytics.html` — **owner only**. Revenue, top dishes, dish
-   ratings. Kitchen-role accounts won't see this link on the dashboard, and
-   the page itself blocks kitchen accounts even if they visit the URL
-   directly (the backend also enforces this server-side).
+- `frontend/js/api.js` → `API_BASE`
+- `frontend/js/socketClient.js` → `SOCKET_URL`
 
-## 4. About the AI recommendation box
+Also make sure the backend `.env` has:
 
-The "what should I eat?" box on the menu page calls `/api/recommend`, which
-depends on your `GEMINI_API_KEY` working on the backend. If that's not sorted
-out yet, the box will just show a friendly "taking a break" message instead
-of crashing — everything else in the app works independently of it.
+- `FRONTEND_URL=http://localhost:3000`
 
-## 5. Notes
+or the origin where you serve the frontend.
 
-- `API_BASE` (in `js/api.js`) and `SOCKET_URL` (in `js/socketClient.js`) are
-  both hardcoded to `http://localhost:5000` — change these if you deploy the
-  backend elsewhere.
-- The cart lives in `localStorage`, keyed per table number, so it survives a
-  page refresh but is specific to the device/browser used to scan the QR
-  code — matching how a real customer would only use their own phone.
-- No build step, no framework — just open the files (through the local
-  server above) and edit directly.
+## Pages and flows
+
+### Customer flow
+
+- `customer/menu.html?table=<N>` — QR-generated customer menu view.
+  - Browse menu items
+  - Ask “what should I eat?” recommendations
+  - Add items to cart by table
+- `customer/cart.html?table=<N>` — review cart, update item counts, place order.
+- `customer/order-status.html?table=<N>&order=<id>` — live order tracking.
+  - Shows order progress from placed to preparing to served.
+  - Supports dish feedback once the order is complete.
+
+### Admin flow
+
+- `admin/login.html` — admin authentication page.
+- `admin/dashboard.html` — kitchen dashboard with live orders.
+- `admin/menu-manage.html` — manage menu items and availability.
+- `admin/analytics.html` — sales and rating analytics for owner accounts.
+
+## Seeded admin accounts
+
+Use the seeded backend accounts for testing:
+
+- Owner: `owner@restaurant.com` / `password123`
+- Kitchen: `kitchen@restaurant.com` / `password123`
+
+## Frontend architecture
+
+### `frontend/js/api.js`
+
+- Central API wrapper for all backend calls
+- Handles JSON request bodies and auth headers
+- Exposes endpoints for menu, orders, recommendations, feedback, tables, auth, and analytics
+
+### `frontend/js/cart.js`
+
+- Manages cart state in `localStorage`
+- Cart keys are scoped by table number so two table sessions do not mix
+- Provides add, update, clear, and total calculation functions
+
+### `frontend/js/recommend.js`
+
+- Handles the “what should I eat?” input
+- Sends free-text preferences to `/api/recommend`
+- Renders suggested menu item buttons
+
+### `frontend/js/askMenu.js`
+
+- Handles dietary/allergy question form
+- Sends questions to `/api/menu/ask`
+- Displays answer plus allergy disclaimer text
+
+### `frontend/js/socketClient.js`
+
+- Connects to backend Socket.io
+- Supports customer table room joins and kitchen dashboard room joins
+- Provides live updates for `orderStatusUpdate` and `newOrder`
+
+## Important details
+
+- Cart data is stored in localStorage per table.
+- Customers do not log in; they use table number and QR context.
+- Admin pages use JWT tokens returned from `/api/auth/login`.
+- The AI recommendation feature depends on backend Gemini support, but the
+  rest of the site works without it.
+
+## Notes and troubleshooting
+
+- If fetch or Socket.io fails, verify the backend URL settings in
+  `API_BASE` and `SOCKET_URL`.
+- If `recommend` or dietary questions are broken, ensure the backend has a
+  valid `GEMINI_API_KEY` and can call Gemini.
+- If the frontend page is blank or static assets fail, confirm the local
+  server is running and you are not using `file://`.
+
+## Folder structure
+
+```
+frontend/
+├── admin/          admin UI pages
+├── customer/       customer ordering pages
+├── css/            styles
+└── js/             application logic
+```
+
+## Deployment notes
+
+- Serve the `frontend/` folder from a static web server.
+- Keep backend and frontend origins aligned.
+- Update `FRONTEND_URL` in the backend `.env` if the frontend is hosted
+  somewhere else.

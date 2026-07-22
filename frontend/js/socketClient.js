@@ -7,7 +7,7 @@ const SOCKET_URL = "http://localhost:5000";
 // Live updates are a nice-to-have layer on top of the REST API - if the
 // socket.io library didn't load (blocked network, slow CDN, etc.) the rest
 // of the page must keep working via plain fetch + manual refresh, not crash.
-function connectAsCustomer(tableNumber, onStatusUpdate) {
+function connectAsCustomer(tableNumber, onStatusUpdate, onWaiterCallResolved) {
   if (typeof io === "undefined") {
     console.warn("Socket.io not available - live updates disabled, falling back to manual refresh.");
     return null;
@@ -25,6 +25,10 @@ function connectAsCustomer(tableNumber, onStatusUpdate) {
         onStatusUpdate(order);
       }
     });
+
+    if (onWaiterCallResolved) {
+      socket.on("waiterCallResolved", onWaiterCallResolved);
+    }
 
     socket.on("connect_error", (err) => {
       console.warn("Socket connection failed:", err.message);

@@ -15,6 +15,8 @@ const tableRoutes = require("./routes/tableRoutes");
 const feedbackRoutes = require("./routes/feedbackRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const groupSessionRoutes = require("./routes/groupSessionRoutes");
+const waiterCallRoutes = require("./routes/waiterCallRoutes");
+const mealPlannerRoutes = require("./routes/mealPlannerRoutes");
 
 const app = express();
 const server = http.createServer(app);
@@ -40,6 +42,8 @@ app.use("/api/tables", tableRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/sessions", groupSessionRoutes);
+app.use("/api/waiter-call", waiterCallRoutes);
+app.use("/api/plan-meal", mealPlannerRoutes);
 
 // 404 handler
 app.use((req, res) => {

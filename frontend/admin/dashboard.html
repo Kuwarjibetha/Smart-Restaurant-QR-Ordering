@@ -29,6 +29,12 @@
 </header>
 
 <main class="max-w-5xl mx-auto px-5 py-8">
+
+  <div id="waiter-call-panel" class="card p-4 mb-6" style="display:none;">
+    <h2 class="eyebrow mb-3">🔔 Waiter Calls</h2>
+    <div id="waiter-call-list" class="space-y-2"></div>
+  </div>
+
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <div>
       <h2 class="eyebrow mb-3">📝 Placed</h2>
@@ -121,15 +127,66 @@
 
   loadInitialOrders();
 
+  // ── Waiter Calls ──────────────────────────────────────────────────────────
+  const waiterCallsById = new Map();
+  const REQUEST_LABEL = { water: "💧 Water", check: "🧾 Check", help: "🙋 General Help" };
+
+  function renderWaiterCalls() {
+    const panel = document.getElementById("waiter-call-panel");
+    const list = document.getElementById("waiter-call-list");
+    list.innerHTML = "";
+
+    const pending = Array.from(waiterCallsById.values()).filter((c) => c.status !== "resolved");
+    panel.style.display = pending.length ? "block" : "none";
+
+    pending
+      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+      .forEach((call) => {
+        const row = document.createElement("div");
+        row.className = "flex justify-between items-center p-2 rounded-lg";
+        row.style.background = "var(--cream)";
+        row.innerHTML = `
+          <span class="text-sm font-semibold">Table ${call.tableNumber} — ${REQUEST_LABEL[call.requestType] || call.requestType}</span>
+          <button class="btn-primary px-3 py-1.5 text-xs">Resolve</button>
+        `;
+        row.querySelector("button").onclick = async () => {
+          try {
+            await api.resolveWaiterCall(call._id);
+            // No need to manually remove it here — the socket "waiterCallResolvedBroadcast"
+            // event will fire back to this same dashboard and update the panel.
+          } catch (err) {
+            alert(err.message || "Couldn't resolve this call.");
+          }
+        };
+        list.appendChild(row);
+      });
+  }
+
+  async function loadActiveWaiterCalls() {
+    try {
+      const { calls } = await api.getActiveWaiterCalls();
+      calls.forEach((c) => waiterCallsById.set(c._id, c));
+      renderWaiterCalls();
+    } catch (err) {
+      console.warn("Couldn't load waiter calls:", err.message);
+    }
+  }
+
+  loadActiveWaiterCalls();
+  // ────────────────────────────────────────────────────────────────────────
+
   const socket = connectAsKitchen({
     onNewOrder: (order) => { ordersById.set(order._id, order); renderColumns(); },
     onStatusUpdate: (order) => { ordersById.set(order._id, order); renderColumns(); },
+    onNewWaiterCall: (call) => { waiterCallsById.set(call._id, call); renderWaiterCalls(); },
+    onWaiterCallResolved: ({ callId }) => { waiterCallsById.delete(callId); renderWaiterCalls(); },
   });
 
   // Fallback: if sockets aren't connected, poll every 8s so the board still updates
   setInterval(() => {
     if (!socket || !socket.connected) {
       loadInitialOrders();
+      loadActiveWaiterCalls();
     }
   }, 8000);
 </script>

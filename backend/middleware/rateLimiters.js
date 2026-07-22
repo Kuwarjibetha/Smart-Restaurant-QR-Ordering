@@ -42,4 +42,15 @@ const sessionPollLimiter = rateLimit({
   message: { error: "Too many requests. Please slow down." },
 });
 
-module.exports = { recommendLimiter, askMenuLimiter, orderLimiter, sessionPollLimiter };
+// Protects /api/plan-meal from abuse since every call costs a Gemini API request
+const mealPlanLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: "Too many planning requests. Please wait a moment and try again.",
+  },
+});
+
+module.exports = { recommendLimiter, askMenuLimiter, orderLimiter, sessionPollLimiter, mealPlanLimiter };
