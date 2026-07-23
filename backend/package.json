@@ -25,6 +25,12 @@
     "nodemon": "^3.1.4"
   },
   "engines": {
+<<<<<<< HEAD
   "node": "20.x"
 }
 }
+=======
+    "node": "20.x"
+  }
+}
+>>>>>>> 6f5000f (Use Node 20 LTS)
