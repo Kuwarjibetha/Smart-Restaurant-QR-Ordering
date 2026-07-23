@@ -1,7 +1,11 @@
 // api.js — thin wrapper around fetch for talking to the backend.
 // Change API_BASE if your backend runs somewhere other than localhost:5000.
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = window.API_BASE || (
+  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:5000/api"
+    : `${window.location.origin}/api`
+);
 
 async function apiRequest(path, { method = "GET", body, auth = false } = {}) {
   const headers = { "Content-Type": "application/json" };

@@ -42,6 +42,11 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/sessions", groupSessionRoutes);
 app.use("/api/waiter-call", waiterCallRoutes);
 app.use("/api/plan-meal", mealPlannerRoutes);
+const path = require("path");
+
+// Serve static frontend files (frontend 5 and frontend)
+app.use(express.static(path.join(__dirname, "../frontend 5")));
+app.use(express.static(path.join(__dirname, "../frontend")));
 
 // 404 handler
 app.use((req, res) => {

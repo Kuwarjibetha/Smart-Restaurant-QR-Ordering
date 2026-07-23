@@ -2,7 +2,11 @@
 // Requires the Socket.io client script to be loaded on the page first:
 // <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
-const SOCKET_URL = "http://localhost:5000";
+const SOCKET_URL = window.SOCKET_URL || (
+  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:5000"
+    : window.location.origin
+);
 
 // Live updates are a nice-to-have layer on top of the REST API - if the
 // socket.io library didn't load (blocked network, slow CDN, etc.) the rest

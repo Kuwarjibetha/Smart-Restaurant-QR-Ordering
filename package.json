@@ -1,0 +1,14 @@
+{
+  "name": "smart-restaurant-qr-ordering",
+  "version": "1.0.0",
+  "description": "Smart Restaurant QR Ordering System",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "cd backend && node server.js",
+    "build": "cd backend && npm install",
+    "seed": "cd backend && node utils/seed.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
