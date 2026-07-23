@@ -3,97 +3,162 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Menu · Table</title>
+<title>Menu · Spice Trail</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="../css/style.css" />
 </head>
-<body>
+<body class="pb-28">
 
-<!-- Sticky header -->
-<header class="sticky top-0 z-30" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
-  <div class="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
-    <div>
-      <p class="eyebrow" id="table-label">Table —</p>
-      <h1 class="display text-2xl">The Menu</h1>
+<!-- Header -->
+<header class="sticky top-0 z-30 shadow-sm" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <a href="../index.html" class="display text-xl no-underline" style="color:var(--charcoal)">🌿 Spice Trail</a>
+      <span id="table-label" class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background:var(--cream-deep); border:1px solid var(--clay-line); color:var(--saffron-deep)">Table —</span>
     </div>
-    <a href="cart.html" id="cart-link" class="card px-4 py-2 flex items-center gap-2 relative" style="text-decoration:none; color:var(--charcoal);">
-      <span>🧺</span>
-      <span id="cart-count" class="text-sm font-semibold">0</span>
-    </a>
+
+    <div class="flex items-center gap-2">
+      <a href="cart.html" id="cart-link" class="card px-3.5 py-1.5 flex items-center gap-2 relative no-underline hover:bg-stone-50" style="color:var(--charcoal);">
+        <span class="text-base">🧺 Cart</span>
+        <span id="cart-count" class="text-xs font-bold px-1.5 py-0.5 rounded-full" style="background:var(--chili); color:var(--white)">0</span>
+      </a>
+    </div>
   </div>
 </header>
 
-<main class="max-w-2xl mx-auto px-5 pb-32 pt-6">
+<main class="max-w-6xl mx-auto px-4 pt-6">
 
-  <!-- Group ordering -->
-  <section id="group-order-banner" class="card p-5 mb-8"></section>
+  <!-- Split Container: Left = Food Menu, Right = Features Panel -->
+  <div class="split-container">
+    
+    <!-- LEFT SIDE: Food Menu & Category Filters -->
+    <div>
+      
+      <!-- Top Search & Veg Toggle Bar -->
+      <div class="flex items-center justify-between gap-3 mb-4 card p-3">
+        <div class="relative flex-1">
+          <input id="search-menu-input" type="text" placeholder="Search dish by name or ingredient…" 
+            class="w-full px-3 py-2 pl-9 rounded-lg text-xs" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" />
+          <span class="absolute left-3 top-2.5 text-xs text-stone-400">🔍</span>
+        </div>
 
-  <!-- Call Waiter -->
-  <section class="card p-5 mb-8">
-    <p class="eyebrow mb-2">Need something?</p>
-    <p class="text-sm mb-3" style="color: var(--charcoal-soft)">Tap to call a waiter to your table.</p>
-    <div class="flex gap-2 flex-wrap">
-      <button class="btn-secondary px-4 py-2 text-sm waiter-call-btn" data-type="water">💧 Water</button>
-      <button class="btn-secondary px-4 py-2 text-sm waiter-call-btn" data-type="check">🧾 Check</button>
-      <button class="btn-secondary px-4 py-2 text-sm waiter-call-btn" data-type="help">🙋 General Help</button>
+        <label class="flex items-center gap-1.5 text-xs font-semibold cursor-pointer shrink-0 px-3 py-2 rounded-lg" style="background:var(--cream-deep); border:1px solid var(--clay-line);">
+          <input id="veg-only-toggle" type="checkbox" class="accent-emerald-700 cursor-pointer" />
+          <span style="color:var(--cardamom)">🌱 Veg Only</span>
+        </label>
+      </div>
+
+      <!-- Sticky Category Pills Bar -->
+      <div class="card p-2 mb-6">
+        <div id="category-pills" class="category-bar-scroll">
+          <button class="cat-pill active" data-category="all">All Dishes</button>
+          <button class="cat-pill" data-category="Starters">🥟 Starters</button>
+          <button class="cat-pill" data-category="Main Course">🍛 Main Course</button>
+          <button class="cat-pill" data-category="Desserts">🍮 Desserts</button>
+          <button class="cat-pill" data-category="Drinks">🥤 Drinks</button>
+        </div>
+      </div>
+
+      <!-- Group Order Active Session Banner -->
+      <section id="group-order-banner" class="mb-4"></section>
+
+      <!-- Menu Dishes Container (Clean text/emoji cards, NO FOOD PHOTOS) -->
+      <div id="menu-container">
+        <p style="color: var(--charcoal-soft)">Loading menu…</p>
+      </div>
     </div>
-    <p id="waiter-call-status" class="text-sm mt-3" style="color: var(--charcoal-soft)"></p>
-  </section>
 
-  <!-- Smart meal planner -->
-  <section class="card p-5 mb-8">
-    <p class="eyebrow mb-2">Planning for a group?</p>
-    <p class="text-sm mb-3" style="color: var(--charcoal-soft)">Tell us how many people and your budget — we'll suggest what and how much to order.</p>
-    <div class="grid grid-cols-2 gap-3 mb-3">
-      <input id="plan-people" type="number" min="1" max="50" placeholder="People (e.g. 6)"
-        class="px-3 py-2 rounded-lg text-sm" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" />
-      <input id="plan-budget" type="number" min="1" placeholder="Budget ₹ (e.g. 1500)"
-        class="px-3 py-2 rounded-lg text-sm" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" />
-      <select id="plan-meal-type" class="px-3 py-2 rounded-lg text-sm" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;">
-        <option value="lunch">Lunch</option>
-        <option value="dinner">Dinner</option>
-      </select>
-      <select id="plan-diet" class="px-3 py-2 rounded-lg text-sm" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;">
-        <option value="veg">Veg only</option>
-        <option value="non-veg">Non-veg OK</option>
-        <option value="both">Mixed group</option>
-      </select>
+    <!-- RIGHT SIDE: All Features Panel (Call Waiter, Group Order, AI Planner, Ask AI) -->
+    <div class="space-y-6">
+      
+      <!-- Feature 1: Call Waiter -->
+      <div class="card p-5 shadow-sm">
+        <h3 class="display text-base mb-1 flex items-center gap-2">🙋 <span>Call Waiter</span></h3>
+        <p class="text-xs text-stone-500 mb-3">Request instant staff assistance at your table.</p>
+        <div class="grid grid-cols-3 gap-2">
+          <button class="btn-secondary py-2 text-xs waiter-call-btn" data-type="water">💧 Water</button>
+          <button class="btn-secondary py-2 text-xs waiter-call-btn" data-type="check">🧾 Check</button>
+          <button class="btn-secondary py-2 text-xs waiter-call-btn" data-type="help">🙋 Help</button>
+        </div>
+        <p id="waiter-call-status" class="text-xs mt-2 font-semibold" style="color: var(--cardamom)"></p>
+      </div>
+
+      <!-- Feature 2: Group Order -->
+      <div class="card p-5 shadow-sm">
+        <h3 class="display text-base mb-1 flex items-center gap-2">👥 <span>Group Order</span></h3>
+        <p class="text-xs text-stone-500 mb-3">Share one cart with friends sitting at your table.</p>
+        <div id="sidebar-group-container"></div>
+      </div>
+
+      <!-- Feature 3: Smart Meal Planner -->
+      <div class="card p-5 shadow-sm">
+        <h3 class="display text-base mb-1 flex items-center gap-2">🤖 <span>Smart Meal Planner</span></h3>
+        <p class="text-xs text-stone-500 mb-3">Input your budget and group size to get dish suggestions.</p>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <input id="plan-people" type="number" min="1" max="50" placeholder="People (e.g. 4)"
+            class="px-3 py-2 rounded-lg text-xs" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" />
+          <input id="plan-budget" type="number" min="1" placeholder="Budget ₹ (e.g. 1200)"
+            class="px-3 py-2 rounded-lg text-xs" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" />
+          <select id="plan-meal-type" class="px-3 py-2 rounded-lg text-xs" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;">
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+          </select>
+          <select id="plan-diet" class="px-3 py-2 rounded-lg text-xs" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;">
+            <option value="veg">Veg only</option>
+            <option value="non-veg">Non-veg OK</option>
+            <option value="both">Mixed group</option>
+          </select>
+        </div>
+        <button id="plan-meal-btn" class="btn-primary w-full py-2.5 text-xs font-semibold">Plan Order 🚀</button>
+        <p id="meal-plan-error" class="text-xs mt-2 hidden" style="color: var(--chili)"></p>
+        <div id="meal-plan-result" class="mt-3 text-xs"></div>
+      </div>
+
+      <!-- Feature 4: Ask Spice Trail AI -->
+      <div class="card p-5 shadow-sm space-y-4">
+        <div>
+          <h3 class="display text-base mb-1 flex items-center gap-2">✨ <span>Ask Spice Trail AI</span></h3>
+          <p class="text-xs text-stone-500 mb-2">Ask for mood recommendations or dietary details.</p>
+          <div class="flex gap-2">
+            <input id="recommend-input" type="text" placeholder="e.g. spicy veg dish under ₹200"
+              class="flex-1 px-3 py-2 rounded-lg text-xs" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" />
+            <button id="recommend-btn" class="btn-primary px-3 py-2 text-xs shrink-0">Ask</button>
+          </div>
+          <div id="recommend-results" class="mt-2 flex flex-wrap text-xs"></div>
+        </div>
+
+        <div style="border-top: 1px solid var(--clay-line); padding-top: 12px; margin-top: 16px;">
+          <label class="block text-xs font-semibold mb-1">Allergy or Dietary Question?</label>
+          <div class="flex gap-2">
+            <input id="ask-menu-input" type="text" placeholder="e.g. is the Butter Chicken nut-free?"
+              class="flex-1 px-3 py-2 rounded-lg text-xs" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" />
+            <button id="ask-menu-btn" class="btn-primary px-3 py-2 text-xs shrink-0">Ask</button>
+          </div>
+          <div id="ask-menu-result" class="mt-2 text-xs"></div>
+        </div>
+      </div>
+
     </div>
-    <button id="plan-meal-btn" class="btn-primary px-4 py-2 text-sm">Plan my order</button>
-    <p id="meal-plan-error" class="text-sm mt-2 hidden" style="color: var(--chili)"></p>
-    <div id="meal-plan-result" class="mt-3"></div>
-  </section>
 
-  <!-- AI recommendation -->
-  <section class="card p-5 mb-8">
-    <p class="eyebrow mb-2">Not sure what to get?</p>
-    <p class="text-sm mb-3" style="color: var(--charcoal-soft)">Tell us your mood — spicy, quick, light, under a budget — and we'll point at the menu.</p>
-    <div class="flex gap-2">
-      <input id="recommend-input" type="text" placeholder="e.g. something spicy and vegetarian, under ₹200"
-        class="flex-1 px-3 py-2 rounded-lg text-sm" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" />
-      <button id="recommend-btn" class="btn-primary px-4 py-2 text-sm">Ask</button>
-    </div>
-    <div id="recommend-results" class="mt-3 flex flex-wrap"></div>
-  </section>
-
-  <!-- Dietary / allergen Q&A -->
-  <section class="card p-5 mb-8">
-    <p class="eyebrow mb-2">Allergy or dietary question?</p>
-    <p class="text-sm mb-3" style="color: var(--charcoal-soft)">Ask about a specific dish — e.g. "does the Butter Chicken have nuts?" or "what's vegan here?"</p>
-    <div class="flex gap-2">
-      <input id="ask-menu-input" type="text" placeholder="e.g. is the Masala Dosa gluten-free?"
-        class="flex-1 px-3 py-2 rounded-lg text-sm" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" />
-      <button id="ask-menu-btn" class="btn-primary px-4 py-2 text-sm">Ask</button>
-    </div>
-    <div id="ask-menu-result" class="mt-3"></div>
-  </section>
-
-  <div id="menu-container">
-    <p style="color: var(--charcoal-soft)">Loading menu…</p>
   </div>
+
 </main>
+
+<!-- Floating Bottom Cart Bar -->
+<div id="floating-cart-bar" class="floating-cart-bar hidden">
+  <div class="flex items-center gap-3">
+    <span class="text-xl">🧺</span>
+    <div>
+      <p class="text-xs text-stone-300"><span id="float-cart-count">0</span> items in cart</p>
+      <p class="font-bold text-sm" id="float-cart-total">₹0</p>
+    </div>
+  </div>
+  <a id="float-checkout-btn" href="cart.html" class="btn-primary px-5 py-2 text-xs no-underline font-semibold">
+    View Cart &amp; Checkout →
+  </a>
+</div>
 
 <script src="../js/api.js"></script>
 <script src="../js/cart.js"></script>
@@ -104,6 +169,158 @@
 <script src="../js/groupOrder.js"></script>
 <script src="../js/mealPlanner.js"></script>
 <script>
+  let allMenuItems = [];
+  let currentCategory = "all";
+
+  const tableNumber = getTableNumberFromUrl() || 1;
+  document.getElementById("table-label").textContent = `Table ${tableNumber}`;
+  document.getElementById("cart-link").href = `cart.html?table=${tableNumber}`;
+  document.getElementById("float-checkout-btn").href = `cart.html?table=${tableNumber}`;
+
+  function refreshCartBadge() {
+    const cart = getCart(tableNumber);
+    const count = cart.reduce((n, i) => n + i.quantity, 0);
+    const total = cartTotal(cart);
+    
+    document.getElementById("cart-count").textContent = count;
+    document.getElementById("float-cart-count").textContent = count;
+    document.getElementById("float-cart-total").textContent = `₹${total}`;
+
+    const floatBar = document.getElementById("floating-cart-bar");
+    if (count > 0) {
+      floatBar.classList.remove("hidden");
+    } else {
+      floatBar.classList.add("hidden");
+    }
+  }
+
+  function categoryIcon(category) {
+    const map = { "Starters": "🥟", "Main Course": "🍛", "Desserts": "🍮", "Drinks": "🥤" };
+    return map[category] || "🍽️";
+  }
+
+  function renderFilteredMenu() {
+    const container = document.getElementById("menu-container");
+    const vegOnly = document.getElementById("veg-only-toggle").checked;
+    const query = (document.getElementById("search-menu-input")?.value || "").toLowerCase().trim();
+
+    let items = allMenuItems;
+    if (vegOnly) {
+      items = items.filter(i => i.isVeg);
+    }
+    if (query) {
+      items = items.filter(i => i.name.toLowerCase().includes(query) || (i.description && i.description.toLowerCase().includes(query)));
+    }
+
+    const byCategory = {};
+    items.forEach((item) => {
+      if (currentCategory !== "all" && item.category !== currentCategory) return;
+      if (!byCategory[item.category]) byCategory[item.category] = [];
+      byCategory[item.category].push(item);
+    });
+
+    if (Object.keys(byCategory).length === 0) {
+      container.innerHTML = `
+        <div class="card p-8 text-center my-6">
+          <p class="text-2xl mb-2">🍽️</p>
+          <p class="font-semibold text-sm">No dishes match your filter.</p>
+          <p class="text-xs text-stone-500 mt-1">Try clearing your search or veg filter.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = "";
+    Object.entries(byCategory).forEach(([category, dishes]) => {
+      const section = document.createElement("section");
+      section.className = "mb-8";
+      section.innerHTML = `<h2 class="display text-xl mb-4 flex items-center gap-2">${categoryIcon(category)} ${category} <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:var(--cream-deep); color:var(--charcoal-soft); border:1px solid var(--clay-line);">${dishes.length}</span></h2>`;
+
+      const grid = document.createElement("div");
+      grid.className = "dish-grid";
+
+      dishes.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "dish-card";
+        card.setAttribute("data-item-id", item._id);
+
+        /* CLEAN TEXT CARD - NO FOOD PHOTOS USED */
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">${categoryIcon(item.category)}</span>
+                <span class="veg-dot ${item.isVeg ? "" : "nonveg-dot"}"></span>
+                <h3 class="font-bold text-sm" style="color:var(--charcoal)">${item.name}</h3>
+              </div>
+              <span class="text-xs font-bold px-2 py-0.5 rounded-full shrink-0" style="background:var(--cream-deep); border:1px solid var(--clay-line); color:var(--charcoal-soft)">
+                ⏱ ~${item.avgPrepTimeMinutes || 15}m
+              </span>
+            </div>
+            
+            <p class="text-xs line-clamp-2 mb-4" style="color:var(--charcoal-soft)">
+              ${item.description || "Freshly cooked with authentic spiced ingredients."}
+            </p>
+          </div>
+
+          <div class="flex items-center justify-between pt-3 mt-1" style="border-top:1px dashed var(--clay-line)">
+            <span class="font-bold text-base" style="color:var(--saffron-deep)">₹${item.price}</span>
+            <button class="btn-primary px-4 py-2 text-xs font-semibold" ${!item.available ? "disabled" : ""}>
+              ${!item.available ? "Out of stock" : "+ Add"}
+            </button>
+          </div>
+        `;
+
+        const addBtn = card.querySelector("button");
+        if (item.available) {
+          addBtn.onclick = async () => {
+            const original = addBtn.textContent;
+            try {
+              const handledByGroup = await groupOrderAddItem(item);
+              if (!handledByGroup) {
+                addToCart(tableNumber, item, 1);
+                refreshCartBadge();
+              }
+              addBtn.textContent = "Added ✓";
+              setTimeout(() => (addBtn.textContent = original), 900);
+            } catch (err) {
+              alert(err.message);
+            }
+          };
+        }
+        grid.appendChild(card);
+      });
+
+      section.appendChild(grid);
+      container.appendChild(section);
+    });
+  }
+
+  async function loadMenu() {
+    const container = document.getElementById("menu-container");
+    try {
+      const { items } = await api.getMenu();
+      allMenuItems = items;
+      renderFilteredMenu();
+    } catch (err) {
+      container.innerHTML = `<p style="color: var(--chili)">Couldn't load the menu. Check that the backend is running.</p>`;
+    }
+  }
+
+  // Setup category pill listeners
+  document.querySelectorAll("#category-pills .cat-pill").forEach(pill => {
+    pill.onclick = () => {
+      document.querySelectorAll("#category-pills .cat-pill").forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+      currentCategory = pill.dataset.category;
+      renderFilteredMenu();
+    };
+  });
+
+  document.getElementById("veg-only-toggle").onchange = renderFilteredMenu;
+  document.getElementById("search-menu-input")?.addEventListener("input", renderFilteredMenu);
+
+  // Setup AI & Assistant Handlers
   document.getElementById("plan-meal-btn").onclick = () => {
     handleMealPlanSubmit(
       {
@@ -123,80 +340,6 @@
     if (e.key === "Enter") document.getElementById("ask-menu-btn").click();
   });
 
-  const tableNumber = getTableNumberFromUrl() || 1; // fallback for testing without a real QR scan
-  document.getElementById("table-label").textContent = `Table ${tableNumber}`;
-  document.getElementById("cart-link").href = `cart.html?table=${tableNumber}`;
-
-  function refreshCartBadge() {
-    const cart = getCart(tableNumber);
-    const count = cart.reduce((n, i) => n + i.quantity, 0);
-    document.getElementById("cart-count").textContent = count;
-  }
-
-  function categoryIcon(category) {
-    const map = { "Starters": "🥟", "Main Course": "🍛", "Desserts": "🍮", "Drinks": "🥤" };
-    return map[category] || "🍽️";
-  }
-
-  async function loadMenu() {
-    const container = document.getElementById("menu-container");
-    try {
-      const { items } = await api.getMenu();
-      const byCategory = {};
-      items.forEach((item) => {
-        if (!byCategory[item.category]) byCategory[item.category] = [];
-        byCategory[item.category].push(item);
-      });
-
-      container.innerHTML = "";
-      Object.entries(byCategory).forEach(([category, dishes]) => {
-        const section = document.createElement("section");
-        section.className = "mb-8";
-        section.innerHTML = `<h2 class="display text-xl mb-3">${categoryIcon(category)} ${category}</h2>`;
-
-        const list = document.createElement("div");
-        list.className = "space-y-3";
-
-        dishes.forEach((item) => {
-          const row = document.createElement("div");
-          row.className = "card p-4 flex items-center justify-between gap-3";
-          row.setAttribute("data-item-id", item._id);
-          row.innerHTML = `
-            <div class="flex-1">
-              <div class="flex items-center gap-2 mb-1">
-                <span class="veg-dot ${item.isVeg ? "" : "nonveg-dot"}"></span>
-                <span class="font-semibold">${item.name}</span>
-              </div>
-              <p class="text-sm" style="color: var(--charcoal-soft)">₹${item.price} · ~${item.avgPrepTimeMinutes} min${!item.available ? " · <span style='color:var(--chili)'>Out of stock</span>" : ""}</p>
-            </div>
-            <button class="btn-primary px-4 py-2 text-sm" ${!item.available ? "disabled" : ""}>Add</button>
-          `;
-          row.querySelector("button").onclick = async () => {
-            const btn = row.querySelector("button");
-            const original = btn.textContent;
-            try {
-              const handledByGroup = await groupOrderAddItem(item);
-              if (!handledByGroup) {
-                addToCart(tableNumber, item, 1);
-                refreshCartBadge();
-              }
-              btn.textContent = "Added ✓";
-              setTimeout(() => (btn.textContent = original), 900);
-            } catch (err) {
-              alert(err.message);
-            }
-          };
-          list.appendChild(row);
-        });
-
-        section.appendChild(list);
-        container.appendChild(section);
-      });
-    } catch (err) {
-      container.innerHTML = `<p style="color: var(--chili)">Couldn't load the menu. Check that the backend is running.</p>`;
-    }
-  }
-
   document.getElementById("recommend-btn").onclick = () => {
     handleRecommendSubmit(document.getElementById("recommend-input"), document.getElementById("recommend-results"));
   };
@@ -204,9 +347,7 @@
     if (e.key === "Enter") document.getElementById("recommend-btn").click();
   });
 
-  // ── Call Waiter ─────────────────────────────────────────────────────────
-  // Creation goes through REST (matches how orders/sessions work in this app).
-  // The socket connection here is only used to receive the "resolved" ping back.
+  // Call Waiter Socket & API setup
   const waiterStatusEl = document.getElementById("waiter-call-status");
   connectAsCustomer(tableNumber, () => {}, () => {
     waiterStatusEl.textContent = "Your request has been handled. Thank you!";
@@ -224,15 +365,25 @@
       }
     };
   });
-  // ────────────────────────────────────────────────────────────────────────
 
   refreshCartBadge();
   loadMenu();
-  initGroupOrder(tableNumber, document.getElementById("group-order-banner")).then((isGroupMode) => {
+
+  // Group Order Container Handler
+  const groupBannerEl = document.getElementById("group-order-banner");
+  const sidebarGroupContainer = document.getElementById("sidebar-group-container");
+
+  const syncObserver = new MutationObserver(() => {
+    if (sidebarGroupContainer && groupBannerEl) {
+      sidebarGroupContainer.innerHTML = groupBannerEl.innerHTML;
+    }
+  });
+  syncObserver.observe(groupBannerEl, { childList: true, subtree: true });
+
+  initGroupOrder(tableNumber, groupBannerEl).then((isGroupMode) => {
     if (isGroupMode) {
-      // The shared cart replaces the private one for this session - hide
-      // the private cart icon so it's not confusing to have two carts.
       document.getElementById("cart-link").style.display = "none";
+      document.getElementById("floating-cart-bar").style.display = "none";
     }
   });
 </script>

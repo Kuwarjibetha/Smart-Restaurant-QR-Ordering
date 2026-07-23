@@ -3,25 +3,32 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Order Status</title>
+<title>Live Order Status · Spice Trail</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="../js/socket.io.min.js"></script>
 <link rel="stylesheet" href="../css/style.css" />
 </head>
-<body>
+<body class="pb-20" style="background:var(--cream)">
 
-<header class="sticky top-0 z-30" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
-  <div class="max-w-2xl mx-auto px-5 py-4">
-    <p class="eyebrow" id="table-label">Table —</p>
-    <h1 class="display text-2xl">Your Order</h1>
+<header class="sticky top-0 z-30 shadow-sm" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
+  <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div>
+      <span id="table-label" class="eyebrow">Table —</span>
+      <h1 class="display text-xl font-bold">Order Tracker</h1>
+    </div>
+    <a href="menu.html" id="order-more-header" class="btn-secondary px-3 py-1.5 text-xs no-underline font-semibold flex items-center gap-1">
+      <span>+</span> <span>Add More Dishes</span>
+    </a>
   </div>
 </header>
 
-<main class="max-w-2xl mx-auto px-5 pb-16 pt-8">
+<main class="max-w-3xl mx-auto px-4 pt-6 space-y-6">
 
-  <section class="card p-6 mb-8">
+  <!-- Spice Trail Stepper Card -->
+  <section class="card p-6 shadow-sm">
+    <h2 class="eyebrow text-center mb-6">Kitchen Status Pipeline</h2>
     <div class="spice-trail mb-6">
       <div class="stage" data-status="placed">
         <div class="line"></div>
@@ -38,19 +45,22 @@
         <div class="label">Served</div>
       </div>
     </div>
-    <p class="text-center text-sm" id="status-message" style="color: var(--charcoal-soft)">Loading your order…</p>
+    <p class="text-center text-xs font-semibold py-2 px-4 rounded-full mx-auto w-fit" id="status-message" style="background:var(--cream-deep); color: var(--charcoal); border:1px solid var(--clay-line)">Loading your order status…</p>
   </section>
 
-  <section id="order-details" class="card p-5 mb-8"></section>
+  <!-- Order Items Summary Card -->
+  <section id="order-details" class="card p-6 shadow-sm"></section>
 
-  <section id="feedback-section" class="card p-5 hidden">
-    <p class="eyebrow mb-3">Rate your dishes</p>
-    <div id="feedback-items" class="space-y-4"></div>
-    <button id="submit-feedback-btn" class="btn-primary w-full py-3 mt-4">Submit feedback</button>
-    <p id="feedback-thanks" class="text-center text-sm mt-3 hidden" style="color: var(--cardamom);">Thanks — that helps the kitchen! 🌿</p>
+  <!-- Dish Rating & Feedback Section -->
+  <section id="feedback-section" class="card p-6 shadow-sm hidden">
+    <h2 class="eyebrow mb-1">Rate Your Dishes</h2>
+    <p class="text-xs text-stone-500 mb-4">How was your food? Let the chef know!</p>
+    <div id="feedback-items" class="space-y-3"></div>
+    <button id="submit-feedback-btn" class="btn-primary w-full py-3 mt-4 text-xs font-semibold">Submit Review ⭐</button>
+    <p id="feedback-thanks" class="text-center text-xs mt-3 hidden font-semibold" style="color: var(--cardamom);">Thanks — that helps the kitchen! 🌿</p>
   </section>
 
-  <a href="menu.html" id="order-more-link" class="btn-secondary block text-center py-3 mt-6" style="text-decoration:none;">Order more</a>
+  <a href="menu.html" id="order-more-link" class="btn-secondary block text-center py-3 text-xs no-underline font-semibold">Back to Menu</a>
 </main>
 
 <script src="../js/api.js"></script>
@@ -62,6 +72,7 @@
 
   document.getElementById("table-label").textContent = `Table ${tableNumber}`;
   document.getElementById("order-more-link").href = `menu.html?table=${tableNumber}`;
+  document.getElementById("order-more-header").href = `menu.html?table=${tableNumber}`;
 
   const STAGES = ["placed", "preparing", "served"];
 
@@ -74,9 +85,9 @@
     });
 
     const messages = {
-      placed: "Your order has been sent to the kitchen.",
-      preparing: "The kitchen is on it 🔥",
-      served: "Enjoy your meal!",
+      placed: "📝 Your order has been sent to the kitchen.",
+      preparing: "🔥 The kitchen is preparing your dishes right now!",
+      served: "🍽️ Order served! Enjoy your meal!",
     };
     document.getElementById("status-message").textContent = messages[status] || "";
 
@@ -88,18 +99,27 @@
   function renderOrderDetails(order) {
     const el = document.getElementById("order-details");
     el.innerHTML = `
-      <p class="eyebrow mb-3">Order summary</p>
-      ${order.items.map((i) => `
-        <div class="flex justify-between text-sm mb-2">
-          <span>${i.quantity} × ${i.name}</span>
-          <span>₹${i.price * i.quantity}</span>
-        </div>
-      `).join("")}
-      <div class="flex justify-between font-semibold pt-3 mt-2" style="border-top: 1px solid var(--clay-line);">
-        <span>Total</span>
-        <span>₹${order.totalAmount}</span>
+      <div class="flex justify-between items-center mb-3 pb-2" style="border-bottom:1px solid var(--clay-line)">
+        <p class="eyebrow">Order Items</p>
+        <span class="text-xs font-bold px-2.5 py-1 rounded-full" style="background:var(--cream-deep); color:var(--charcoal-soft); border:1px solid var(--clay-line)">⏱ ~${order.estimatedWaitTime || 15} min wait</span>
       </div>
-      <p class="text-sm mt-3" style="color: var(--charcoal-soft)">Estimated wait: ~${order.estimatedWaitTime} min</p>
+
+      <div class="space-y-2 mb-3">
+        ${order.items.map((i) => `
+          <div class="flex items-center justify-between text-xs py-1">
+            <div class="flex items-center gap-2">
+              <span class="font-bold px-2 py-0.5 rounded text-xs" style="background:var(--saffron); color:var(--white)">${i.quantity}×</span>
+              <span class="font-semibold" style="color:var(--charcoal)">${i.name}</span>
+            </div>
+            <span class="font-bold" style="color:var(--charcoal-soft)">₹${i.price * i.quantity}</span>
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="flex justify-between font-bold text-sm pt-3" style="border-top: 1px solid var(--clay-line);">
+        <span>Total Amount</span>
+        <span style="color:var(--saffron-deep)">₹${order.totalAmount}</span>
+      </div>
     `;
 
     renderFeedbackForm(order);
@@ -110,10 +130,12 @@
     container.innerHTML = "";
     order.items.forEach((item) => {
       const row = document.createElement("div");
+      row.className = "flex items-center justify-between p-3 rounded-lg border bg-white";
+      row.style.borderColor = "var(--clay-line)";
       row.innerHTML = `
-        <p class="text-sm font-semibold mb-1">${item.name}</p>
+        <span class="text-xs font-semibold">${item.name}</span>
         <div class="flex gap-1" data-menu-item-id="${item.menuItemId}">
-          ${[1,2,3,4,5].map((n) => `<button class="star" data-value="${n}" style="font-size:1.3rem; background:none; border:none; cursor:pointer; opacity:0.35;">★</button>`).join("")}
+          ${[1,2,3,4,5].map((n) => `<button class="star" data-value="${n}" style="font-size:1.2rem; background:none; border:none; cursor:pointer; opacity:0.35;">★</button>`).join("")}
         </div>
       `;
       const stars = row.querySelectorAll(".star");
@@ -160,11 +182,8 @@
     }
   }
 
-  // Always load the current status via a normal API call first - this must
-  // work regardless of whether live updates are available.
   loadInitialStatus();
 
-  // Live updates via Socket.io (best-effort - falls back to polling below if unavailable)
   const socket = connectAsCustomer(tableNumber, (order) => {
     if (!orderId || order._id === orderId) {
       paintStatus(order.status);
@@ -172,7 +191,6 @@
     }
   });
 
-  // Fallback: if sockets aren't connected, poll every 8s so status still updates
   setInterval(() => {
     if (!socket || !socket.connected) {
       loadInitialStatus();

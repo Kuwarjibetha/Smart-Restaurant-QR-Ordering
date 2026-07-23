@@ -1,44 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Sales Analytics</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="../css/style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../css/style.css" />
 </head>
+
 <body>
 
-<header class="sticky top-0 z-30" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
-  <div class="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between">
-    <div>
-      <p class="eyebrow">Owner</p>
-      <h1 class="display text-2xl">Sales Analytics</h1>
+  <header class="sticky top-0 z-30" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
+    <div class="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between">
+      <div>
+        <p class="eyebrow">Owner</p>
+        <h1 class="display text-2xl">Sales Analytics</h1>
+      </div>
+      <a href="dashboard.html"
+        style="color: var(--saffron-deep); text-decoration:none; font-weight:600; font-size:0.9rem;">← Dashboard</a>
     </div>
-    <a href="dashboard.html" style="color: var(--saffron-deep); text-decoration:none; font-weight:600; font-size:0.9rem;">← Dashboard</a>
-  </div>
-</header>
+  </header>
 
-<main class="max-w-4xl mx-auto px-5 py-8">
-  <div id="content">
-    <p style="color: var(--charcoal-soft)">Loading report…</p>
-  </div>
-</main>
+  <main class="max-w-4xl mx-auto px-5 py-8">
+    <div id="content">
+      <p style="color: var(--charcoal-soft)">Loading report…</p>
+    </div>
+  </main>
 
-<script src="../js/api.js"></script>
-<script>
-  if (!localStorage.getItem("adminToken")) window.location.href = "login.html";
-  if (localStorage.getItem("adminRole") !== "owner") {
-    document.body.innerHTML = `<main class="max-w-4xl mx-auto px-5 py-8"><p style="color:var(--chili)">Analytics are only visible to the owner account.</p></main>`;
-  }
+  <script src="../js/api.js"></script>
+  <script>
+    if (!localStorage.getItem("adminToken")) window.location.href = "login.html";
+    if (localStorage.getItem("adminRole") !== "owner") {
+      document.body.innerHTML = `<main class="max-w-4xl mx-auto px-5 py-8"><p style="color:var(--chili)">Analytics are only visible to the owner account.</p></main>`;
+    }
 
-  async function loadReport() {
-    const el = document.getElementById("content");
-    try {
-      const report = await api.getSalesReport();
-      el.innerHTML = `
+    async function loadReport() {
+      const el = document.getElementById("content");
+      try {
+        const report = await api.getSalesReport();
+        el.innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div class="card p-5">
             <p class="eyebrow mb-1">Total revenue</p>
@@ -58,7 +63,7 @@
           <p class="eyebrow mb-3">Top dishes</p>
           <div class="card p-5">
             ${report.topDishes.length === 0 ? `<p class="text-sm" style="color:var(--charcoal-soft)">No served orders yet.</p>` :
-              report.topDishes.map((d) => `
+            report.topDishes.map((d) => `
                 <div class="flex justify-between text-sm py-2" style="border-bottom: 1px solid var(--clay-line);">
                   <span>${d.name}</span>
                   <span style="color: var(--charcoal-soft)">${d.quantitySold} sold · ₹${d.revenue}</span>
@@ -71,7 +76,7 @@
           <p class="eyebrow mb-3">Dish ratings</p>
           <div class="card p-5">
             ${report.dishRatings.length === 0 ? `<p class="text-sm" style="color:var(--charcoal-soft)">No feedback submitted yet.</p>` :
-              report.dishRatings.map((d) => `
+            report.dishRatings.map((d) => `
                 <div class="flex justify-between text-sm py-2" style="border-bottom: 1px solid var(--clay-line);">
                   <span>${d.name}</span>
                   <span style="color: var(--charcoal-soft)">★ ${d.averageRating} (${d.totalRatings})</span>
@@ -80,12 +85,13 @@
           </div>
         </section>
       `;
-    } catch (err) {
-      el.innerHTML = `<p style="color: var(--chili)">${err.message || "Couldn't load the report."}</p>`;
+      } catch (err) {
+        el.innerHTML = `<p style="color: var(--chili)">${err.message || "Couldn't load the report."}</p>`;
+      }
     }
-  }
 
-  loadReport();
-</script>
+    loadReport();
+  </script>
 </body>
+
 </html>

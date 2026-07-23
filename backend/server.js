@@ -21,13 +21,11 @@ const mealPlannerRoutes = require("./routes/mealPlannerRoutes");
 const app = express();
 const server = http.createServer(app);
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
-
-app.use(cors({ origin: FRONTEND_URL, credentials: true }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 const io = new Server(server, {
-  cors: { origin: FRONTEND_URL, credentials: true },
+  cors: { origin: true, credentials: true },
 });
 app.set("io", io); // makes io accessible in controllers via req.app.get("io")
 initSocket(io);

@@ -3,52 +3,116 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Kitchen Dashboard</title>
+<title>Kitchen Operations Dashboard · Spice Trail</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="../js/socket.io.min.js"></script>
 <link rel="stylesheet" href="../css/style.css" />
 </head>
-<body>
+<body class="pb-16">
 
-<header class="sticky top-0 z-30" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
-  <div class="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
-    <div>
-      <p class="eyebrow">Kitchen</p>
-      <h1 class="display text-2xl">Live Orders</h1>
+<!-- Header Navbar -->
+<header class="sticky top-0 z-30 shadow-sm" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
+  <div class="max-w-7xl mx-auto px-5 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <a href="../index.html" class="btn-secondary px-3 py-1.5 text-xs no-underline font-semibold flex items-center gap-1">
+        <span>← Home</span>
+      </a>
+      <div>
+        <p class="eyebrow">Kitchen Operations</p>
+        <h1 class="display text-xl font-bold">Live Kanban Board</h1>
+      </div>
     </div>
-    <nav class="flex items-center gap-4 text-sm font-semibold">
-      <span id="welcome" style="color: var(--charcoal-soft);"></span>
-      <a href="menu-manage.html" style="color: var(--charcoal); text-decoration:none;">Menu</a>
-      <a href="tables.html" style="color: var(--charcoal); text-decoration:none;">Table QR codes</a>
-      <a href="analytics.html" id="analytics-link" style="color: var(--charcoal); text-decoration:none;">Analytics</a>
-      <button id="logout-btn" class="btn-secondary px-3 py-1.5">Log out</button>
+
+    <nav class="flex items-center gap-4 text-xs font-semibold">
+      <span id="welcome" class="hidden md:inline text-stone-500"></span>
+      <a href="menu-manage.html" class="no-underline text-stone-700 hover:text-stone-900">Menu Items</a>
+      <a href="tables.html" class="no-underline text-stone-700 hover:text-stone-900">Table QRs</a>
+      <a href="analytics.html" id="analytics-link" class="no-underline text-stone-700 hover:text-stone-900">Analytics</a>
+      <button id="logout-btn" class="btn-secondary px-3 py-1.5 text-xs">Log out</button>
     </nav>
   </div>
 </header>
 
-<main class="max-w-5xl mx-auto px-5 py-8">
+<main class="max-w-7xl mx-auto px-5 py-6 space-y-6">
 
-  <div id="waiter-call-panel" class="card p-4 mb-6" style="display:none;">
-    <h2 class="eyebrow mb-3">🔔 Waiter Calls</h2>
-    <div id="waiter-call-list" class="space-y-2"></div>
+  <!-- Top Metric Summary Ribbon -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="card p-4 flex items-center justify-between shadow-sm">
+      <div>
+        <p class="eyebrow">Active Orders</p>
+        <p id="stat-active" class="display text-2xl font-bold mt-1">0</p>
+      </div>
+      <span class="text-2xl p-2 rounded-full" style="background:var(--cream-deep)">📋</span>
+    </div>
+
+    <div class="card p-4 flex items-center justify-between shadow-sm">
+      <div>
+        <p class="eyebrow">Placed</p>
+        <p id="stat-placed" class="display text-2xl font-bold mt-1">0</p>
+      </div>
+      <span class="text-2xl p-2 rounded-full" style="background:var(--cream-deep)">📝</span>
+    </div>
+
+    <div class="card p-4 flex items-center justify-between shadow-sm">
+      <div>
+        <p class="eyebrow" style="color:var(--saffron-deep)">Preparing</p>
+        <p id="stat-preparing" class="display text-2xl font-bold mt-1" style="color:var(--saffron-deep)">0</p>
+      </div>
+      <span class="text-2xl p-2 rounded-full" style="background:var(--cream-deep)">🔥</span>
+    </div>
+
+    <div class="card p-4 flex items-center justify-between shadow-sm">
+      <div>
+        <p class="eyebrow" style="color:var(--cardamom)">Served</p>
+        <p id="stat-served" class="display text-2xl font-bold mt-1" style="color:var(--cardamom)">0</p>
+      </div>
+      <span class="text-2xl p-2 rounded-full" style="background:var(--cream-deep)">🍽️</span>
+    </div>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div>
-      <h2 class="eyebrow mb-3">📝 Placed</h2>
-      <div id="col-placed" class="space-y-3"></div>
-    </div>
-    <div>
-      <h2 class="eyebrow mb-3">🔥 Preparing</h2>
-      <div id="col-preparing" class="space-y-3"></div>
-    </div>
-    <div>
-      <h2 class="eyebrow mb-3">🍽️ Served</h2>
-      <div id="col-served" class="space-y-3"></div>
-    </div>
+  <!-- Waiter Call Notifications Banner -->
+  <div id="waiter-call-panel" class="card p-4 border-amber-300" style="display:none; background: #FFFBF2;">
+    <h2 class="eyebrow mb-3 flex items-center gap-2" style="color:var(--saffron-deep)">
+      <span class="pulse inline-block w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+      <span>🔔 Active Waiter Table Alerts</span>
+    </h2>
+    <div id="waiter-call-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2"></div>
   </div>
+
+  <!-- Horizontal Side-by-Side Status Columns -->
+  <div class="kanban-horizontal">
+    
+    <!-- Column 1: Placed -->
+    <div class="card p-4 space-y-3" style="background:var(--white)">
+      <div class="flex items-center justify-between border-b pb-3" style="border-color:var(--clay-line)">
+        <h2 class="eyebrow font-bold text-sm">📝 Placed Orders</h2>
+        <span id="badge-placed" class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:var(--cream-deep); border:1px solid var(--clay-line)">0</span>
+      </div>
+      <div id="col-placed" class="space-y-3 min-h-[350px]"></div>
+    </div>
+
+    <!-- Column 2: Preparing -->
+    <div class="card p-4 space-y-3" style="background:var(--white)">
+      <div class="flex items-center justify-between border-b pb-3" style="border-color:var(--clay-line)">
+        <h2 class="eyebrow font-bold text-sm" style="color:var(--saffron-deep)">🔥 In Kitchen (Preparing)</h2>
+        <span id="badge-preparing" class="text-xs font-bold px-2 py-0.5 rounded-full text-amber-800" style="background:#FEF3C7; border:1px solid var(--saffron)">0</span>
+      </div>
+      <div id="col-preparing" class="space-y-3 min-h-[350px]"></div>
+    </div>
+
+    <!-- Column 3: Served -->
+    <div class="card p-4 space-y-3" style="background:var(--white)">
+      <div class="flex items-center justify-between border-b pb-3" style="border-color:var(--clay-line)">
+        <h2 class="eyebrow font-bold text-sm" style="color:var(--cardamom)">🍽️ Served &amp; Complete</h2>
+        <span id="badge-served" class="text-xs font-bold px-2 py-0.5 rounded-full text-emerald-800" style="background:#D1FAE5; border:1px solid var(--cardamom)">0</span>
+      </div>
+      <div id="col-served" class="space-y-3 min-h-[350px]"></div>
+    </div>
+
+  </div>
+
 </main>
 
 <script src="../js/api.js"></script>
@@ -59,7 +123,7 @@
   }
   document.getElementById("welcome").textContent = `Hi, ${localStorage.getItem("adminName") || "there"}`;
   if (localStorage.getItem("adminRole") !== "owner") {
-    document.getElementById("analytics-link").remove();
+    document.getElementById("analytics-link")?.remove();
   }
 
   document.getElementById("logout-btn").onclick = () => {
@@ -71,23 +135,28 @@
 
   const ordersById = new Map();
   const NEXT_STATUS = { placed: "preparing", preparing: "served" };
-  const NEXT_LABEL = { placed: "Start preparing", preparing: "Mark served" };
+  const NEXT_LABEL = { placed: "Start Preparing 🔥", preparing: "Mark Served 🍽️" };
 
   function orderCard(order) {
     const card = document.createElement("div");
-    card.className = "card p-4";
+    card.className = "card p-4 shadow-sm border";
+    card.style.borderColor = "var(--clay-line)";
     const nextStatus = NEXT_STATUS[order.status];
+    const timeAgo = new Date(order.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
     card.innerHTML = `
-      <div class="flex justify-between items-start mb-2">
-        <span class="font-semibold">Table ${order.tableNumber}</span>
-        <span class="text-xs" style="color: var(--charcoal-soft)">${new Date(order.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+      <div class="flex justify-between items-center mb-2 pb-2" style="border-bottom:1px solid var(--clay-line)">
+        <span class="font-bold text-sm">Table ${order.tableNumber}</span>
+        <span class="text-[11px] font-semibold px-2 py-0.5 rounded" style="background:var(--cream-deep); color: var(--charcoal-soft)">
+          ⏱ ${timeAgo}
+        </span>
       </div>
-      <div class="text-sm mb-3" style="color: var(--charcoal-soft)">
-        ${order.items.map((i) => `${i.quantity} × ${i.name}`).join("<br/>")}
+      <div class="text-xs mb-3 space-y-1" style="color: var(--charcoal)">
+        ${order.items.map((i) => `<div class="flex justify-between"><span>${i.quantity} × ${i.name}</span><span class="font-semibold text-stone-500">₹${i.price * i.quantity}</span></div>`).join("")}
       </div>
-      <div class="flex justify-between items-center">
-        <span class="font-semibold text-sm">₹${order.totalAmount}</span>
-        ${nextStatus ? `<button class="btn-primary px-3 py-1.5 text-xs">${NEXT_LABEL[order.status]}</button>` : ""}
+      <div class="flex justify-between items-center pt-2" style="border-top:1px solid var(--clay-line)">
+        <span class="font-bold text-xs" style="color:var(--saffron-deep)">Total: ₹${order.totalAmount}</span>
+        ${nextStatus ? `<button class="btn-primary px-3 py-1.5 text-xs font-semibold shadow-sm">${NEXT_LABEL[order.status]}</button>` : `<span class="text-xs text-emerald-700 font-semibold">Done ✓</span>`}
       </div>
     `;
     if (nextStatus) {
@@ -107,10 +176,24 @@
     Object.values(columns).forEach((c) => (c.innerHTML = ""));
 
     const sorted = Array.from(ordersById.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const counts = { placed: 0, preparing: 0, served: 0 };
+
     sorted.forEach((order) => {
       const col = columns[order.status];
-      if (col) col.appendChild(orderCard(order));
+      if (col) {
+        col.appendChild(orderCard(order));
+        counts[order.status] = (counts[order.status] || 0) + 1;
+      }
     });
+
+    document.getElementById("badge-placed").textContent = counts.placed || 0;
+    document.getElementById("badge-preparing").textContent = counts.preparing || 0;
+    document.getElementById("badge-served").textContent = counts.served || 0;
+
+    document.getElementById("stat-placed").textContent = counts.placed || 0;
+    document.getElementById("stat-preparing").textContent = counts.preparing || 0;
+    document.getElementById("stat-served").textContent = counts.served || 0;
+    document.getElementById("stat-active").textContent = (counts.placed || 0) + (counts.preparing || 0);
   }
 
   async function loadInitialOrders() {
@@ -127,9 +210,9 @@
 
   loadInitialOrders();
 
-  // ── Waiter Calls ──────────────────────────────────────────────────────────
+  // Waiter Calls setup
   const waiterCallsById = new Map();
-  const REQUEST_LABEL = { water: "💧 Water", check: "🧾 Check", help: "🙋 General Help" };
+  const REQUEST_LABEL = { water: "💧 Water", check: "🧾 Check", help: "🙋 Help" };
 
   function renderWaiterCalls() {
     const panel = document.getElementById("waiter-call-panel");
@@ -143,17 +226,18 @@
       .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
       .forEach((call) => {
         const row = document.createElement("div");
-        row.className = "flex justify-between items-center p-2 rounded-lg";
-        row.style.background = "var(--cream)";
+        row.className = "flex justify-between items-center p-2.5 rounded-lg border shadow-sm";
+        row.style.background = "var(--white)";
+        row.style.borderColor = "var(--clay-line)";
         row.innerHTML = `
-          <span class="text-sm font-semibold">Table ${call.tableNumber} — ${REQUEST_LABEL[call.requestType] || call.requestType}</span>
-          <button class="btn-primary px-3 py-1.5 text-xs">Resolve</button>
+          <span class="text-xs font-bold">Table ${call.tableNumber} — ${REQUEST_LABEL[call.requestType] || call.requestType}</span>
+          <button class="btn-secondary px-3 py-1 text-xs font-semibold">Resolve ✓</button>
         `;
         row.querySelector("button").onclick = async () => {
           try {
             await api.resolveWaiterCall(call._id);
-            // No need to manually remove it here — the socket "waiterCallResolvedBroadcast"
-            // event will fire back to this same dashboard and update the panel.
+            waiterCallsById.delete(call._id);
+            renderWaiterCalls();
           } catch (err) {
             alert(err.message || "Couldn't resolve this call.");
           }
@@ -173,16 +257,18 @@
   }
 
   loadActiveWaiterCalls();
-  // ────────────────────────────────────────────────────────────────────────
 
   const socket = connectAsKitchen({
     onNewOrder: (order) => { ordersById.set(order._id, order); renderColumns(); },
     onStatusUpdate: (order) => { ordersById.set(order._id, order); renderColumns(); },
     onNewWaiterCall: (call) => { waiterCallsById.set(call._id, call); renderWaiterCalls(); },
-    onWaiterCallResolved: ({ callId }) => { waiterCallsById.delete(callId); renderWaiterCalls(); },
+    onWaiterCallResolved: (data) => {
+      const callId = data?.callId || data?._id || data;
+      if (callId) waiterCallsById.delete(callId);
+      renderWaiterCalls();
+    },
   });
 
-  // Fallback: if sockets aren't connected, poll every 8s so the board still updates
   setInterval(() => {
     if (!socket || !socket.connected) {
       loadInitialOrders();

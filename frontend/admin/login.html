@@ -3,31 +3,39 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Admin Login</title>
+<title>Admin Login · Spice Trail</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="../css/style.css" />
 </head>
-<body class="min-h-screen flex items-center justify-center px-5">
+<body class="min-h-screen flex flex-col items-center justify-center px-5 relative" style="background:var(--cream)">
 
-<div class="card p-8 w-full max-w-sm">
-  <p class="eyebrow mb-1">Restaurant QR</p>
-  <h1 class="display text-2xl mb-6">Staff sign in</h1>
+<!-- Back to Home Button -->
+<div class="absolute top-5 left-5 z-20">
+  <a href="../index.html" class="btn-secondary px-4 py-2 text-xs no-underline flex items-center gap-1.5 font-semibold">
+    <span>←</span> <span>Back to Home</span>
+  </a>
+</div>
 
-  <label class="text-sm font-semibold block mb-1">Email</label>
-  <input id="email" type="email" class="w-full px-3 py-2 rounded-lg text-sm mb-4" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" placeholder="owner@restaurant.com" />
+<div class="card p-8 w-full max-w-sm shadow-md">
+  <p class="eyebrow mb-1">Spice Trail Staff</p>
+  <h1 class="display text-2xl mb-6">Staff Sign In</h1>
 
-  <label class="text-sm font-semibold block mb-1">Password</label>
-  <input id="password" type="password" class="w-full px-3 py-2 rounded-lg text-sm mb-2" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" placeholder="••••••••" />
+  <label class="text-xs font-semibold block mb-1">Email address</label>
+  <input id="email" type="email" class="w-full px-3 py-2 rounded-lg text-xs mb-4" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" placeholder="owner@restaurant.com" />
 
-  <p id="error-msg" class="text-sm mb-3 hidden" style="color: var(--chili)"></p>
+  <label class="text-xs font-semibold block mb-1">Password</label>
+  <input id="password" type="password" class="w-full px-3 py-2 rounded-lg text-xs mb-2" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" placeholder="••••••••" />
 
-  <button id="login-btn" class="btn-primary w-full py-3 mt-2">Sign in</button>
+  <p id="error-msg" class="text-xs mb-3 hidden" style="color: var(--chili)"></p>
 
-  <p class="text-sm text-center mt-4" style="color: var(--charcoal-soft)">
-    Setting up this restaurant for the first time? <a href="signup.html" style="color: var(--charcoal); font-weight:600; text-decoration:none;">Create owner account</a>
-  </p>
+  <button id="login-btn" class="btn-primary w-full py-3 mt-2 text-xs font-semibold">Sign In →</button>
+
+  <div class="border-t pt-4 mt-5 text-center" style="border-color:var(--clay-line)">
+    <p class="text-xs text-stone-500 mb-2">Setting up this restaurant for the first time?</p>
+    <a href="signup.html" class="btn-secondary px-4 py-2 text-xs no-underline inline-block font-semibold">Create Owner Account</a>
+  </div>
 </div>
 
 <script src="../js/api.js"></script>
@@ -39,7 +47,11 @@
     const btn = document.getElementById("login-btn");
 
     errorEl.classList.add("hidden");
-    if (!email || !password) return;
+    if (!email || !password) {
+      errorEl.textContent = "Please enter both email and password.";
+      errorEl.classList.remove("hidden");
+      return;
+    }
 
     btn.disabled = true;
     btn.textContent = "Signing in…";
@@ -54,7 +66,7 @@
       errorEl.textContent = err.message || "Login failed. Check your credentials.";
       errorEl.classList.remove("hidden");
       btn.disabled = false;
-      btn.textContent = "Sign in";
+      btn.textContent = "Sign In →";
     }
   };
 

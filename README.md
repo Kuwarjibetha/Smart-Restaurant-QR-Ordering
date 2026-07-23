@@ -9,6 +9,9 @@ This repository contains two main parts:
 - `backend/` — Node.js + Express + MongoDB + Socket.io API server
 - `frontend/` — static customer/admin UI built with HTML, CSS, and JavaScript
 
+`frontend 5/` is a local duplicate and is excluded from Git. Use `frontend/`
+for development and deployment.
+
 The system works like this:
 
 - Customers scan a table QR code and open the menu page for their table.

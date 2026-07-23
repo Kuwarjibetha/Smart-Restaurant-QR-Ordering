@@ -1,115 +1,517 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Spice Trail — Restaurant</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="css/style.css" />
-<style>
-  .hero {
-    background: linear-gradient(160deg, var(--cream) 0%, var(--cream-deep) 100%);
-    border-bottom: 1px solid var(--clay-line);
-  }
-  .badge-row span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--charcoal-soft);
-  }
-  .feature-icon {
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    background: var(--cream-deep);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem;
-    border: 1.5px solid var(--clay-line);
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spice Trail — Smart QR Dining System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .hero-bg {
+      background: radial-gradient(circle at 50% 20%, rgba(232, 162, 61, 0.12) 0%, transparent 60%),
+        linear-gradient(165deg, var(--cream) 0%, #F5E8D4 100%);
+      border-bottom: 1px solid var(--clay-line);
+    }
+
+    .feature-card {
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(43, 36, 32, 0.08);
+      border-color: var(--saffron);
+    }
+
+    .pulse-badge {
+      animation: pulseGlow 2s infinite;
+    }
+
+    @keyframes pulseGlow {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.05);
+        opacity: 0.85;
+      }
+    }
+  </style>
 </head>
-<body>
 
-<!-- Nav -->
-<header class="sticky top-0 z-30" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
-  <div class="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
-    <p class="display text-xl">🌿 Spice Trail</p>
-    <nav class="text-sm font-semibold">
-      <a href="admin/login.html" style="color: var(--charcoal-soft); text-decoration:none;">Staff login</a>
-    </nav>
-  </div>
-</header>
+<body class="min-h-screen flex flex-col">
 
-<!-- Hero -->
-<section class="hero">
-  <div class="max-w-5xl mx-auto px-5 pt-16 pb-20 text-center">
-    <p class="eyebrow mb-3">Welcome</p>
-    <h1 class="display text-4xl md:text-5xl mb-5" style="line-height:1.15;">
-      Good food,<br/>ordered your way.
-    </h1>
-    <p class="text-base md:text-lg max-w-xl mx-auto mb-8" style="color: var(--charcoal-soft)">
-      Scan the QR code on your table to see the menu and order straight from
-      your phone — no app, no waiting to flag someone down.
-    </p>
-
-    <div class="flex flex-wrap items-center justify-center gap-4 mb-10">
-      <a href="customer/menu.html?table=1" class="btn-primary px-6 py-3 inline-block" style="text-decoration:none;">
-        Browse the menu
+  <!-- Top Navigation -->
+  <header class="sticky top-0 z-40 shadow-sm"
+    style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
+    <div class="max-w-6xl mx-auto px-5 py-3.5 flex items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-2.5 text-decoration-none text-stone-900">
+        <span class="text-2xl">🌿</span>
+        <div>
+          <span class="display text-xl font-bold block leading-none" style="color:var(--charcoal)">Spice Trail</span>
+          <span class="text-[10px] font-semibold tracking-wider uppercase block" style="color:var(--saffron-deep)">Smart
+            QR Dining</span>
+        </div>
       </a>
+
+      <nav class="hidden md:flex items-center gap-6 text-xs font-semibold" style="color: var(--charcoal-soft)">
+        <a href="#features" class="hover:text-amber-800 transition-colors">Features</a>
+        <a href="#how-it-works" class="hover:text-amber-800 transition-colors">How It Works</a>
+        <a href="#portals" class="hover:text-amber-800 transition-colors">Portals</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href="admin/login.html" class="btn-secondary px-3.5 py-2 text-xs flex items-center gap-1.5 no-underline">
+          <span>👨‍🍳 Staff Login</span>
+        </a>
+        <a href="customer/menu.html?table=1"
+          class="btn-primary px-4 py-2 text-xs flex items-center gap-1.5 no-underline">
+          <span>📱 Open Menu</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-bg relative overflow-hidden py-16 md:py-24">
+    <div class="max-w-6xl mx-auto px-5 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+
+        <!-- Hero Left Text & Interactive Table Selection -->
+        <div class="lg:col-span-7 text-center lg:text-left space-y-6">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-xs"
+            style="background:var(--white); border:1.5px solid var(--clay-line); color:var(--saffron-deep)">
+            <span class="pulse-badge inline-block w-2 h-2 rounded-full" style="background:var(--chili)"></span>
+            <span>Next-Gen QR Ordering &amp; Kitchen Intelligence</span>
+          </div>
+
+          <h1 class="display text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight" style="color:var(--charcoal)">
+            Good food, ordered <span class="underline decoration-amber-400 decoration-wavy decoration-2">your way</span>
+            instantly.
+          </h1>
+
+          <p class="text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed" style="color:var(--charcoal-soft)">
+            Scan your table's QR code to browse an interactive live menu, call waiter service, split bills with friends,
+            and track your kitchen order status in real-time — with zero app downloads required.
+          </p>
+
+          <!-- Interactive Table Simulator Card -->
+          <div class="card p-5 max-w-lg mx-auto lg:mx-0 shadow-md border-amber-200" style="background:var(--white)">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b" style="border-color:var(--clay-line)">
+              <span class="text-xs font-bold flex items-center gap-1.5" style="color:var(--charcoal)">
+                <span>⚡ Live Simulator:</span>
+                <span class="font-normal text-stone-500">Select table to jump right in</span>
+              </span>
+              <span class="text-[11px] font-semibold px-2 py-0.5 rounded"
+                style="background:var(--cream-deep); color:var(--saffron-deep)">Demo Mode</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+              <div class="sm:col-span-7">
+                <label class="block text-[11px] font-semibold mb-1 text-stone-500">Choose a Table Seat</label>
+                <select id="hero-table-select" class="w-full px-3 py-2 text-xs rounded-lg font-semibold"
+                  style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;">
+                  <option value="1">Table 1 — Main Dining Hall</option>
+                  <option value="2">Table 2 — Romantic Window Seat</option>
+                  <option value="3">Table 3 — Outdoor Patio Garden</option>
+                  <option value="4">Table 4 — Executive VIP Booth</option>
+                  <option value="5">Table 5 — Terrace Lounge</option>
+                </select>
+              </div>
+              <div class="sm:col-span-5 flex flex-col justify-end">
+                <button id="hero-launch-btn"
+                  class="btn-primary w-full py-2 px-4 text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+                  <span>Launch Menu</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2 text-xs font-semibold"
+            style="color:var(--charcoal-soft)">
+            <div class="flex items-center gap-1.5">
+              <span class="text-emerald-700">✓</span> No app download
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-emerald-700">✓</span> Instant AI meal advice
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-emerald-700">✓</span> Live preparation updates
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Right Graphic Preview -->
+        <div class="lg:col-span-5 flex justify-center">
+          <div class="relative w-full max-w-sm">
+
+            <!-- Phone / Frame Container -->
+            <div class="card p-6 shadow-2xl relative overflow-hidden"
+              style="background:var(--white); border:2px solid var(--clay-line);">
+              <div class="flex items-center justify-between mb-4 border-b pb-3" style="border-color:var(--clay-line)">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-red-400"></span>
+                  <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                  <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                </div>
+                <span class="text-[11px] font-bold text-stone-400 uppercase tracking-wider">QR Smart Portal</span>
+              </div>
+
+              <!-- Simulated Menu Card Content -->
+              <div class="space-y-3">
+                <div class="p-3 rounded-xl flex items-center justify-between" style="background:var(--cream)">
+                  <div class="flex items-center gap-3">
+                    <div class="text-2xl">🍛</div>
+                    <div>
+                      <p class="font-bold text-xs" style="color:var(--charcoal)">Paneer Butter Masala</p>
+                      <p class="text-[10px]" style="color:var(--cardamom)">🌱 Pure Veg · ₹280</p>
+                    </div>
+                  </div>
+                  <span class="text-xs px-2 py-1 rounded font-bold"
+                    style="background:var(--saffron); color:var(--white)">+ Add</span>
+                </div>
+
+                <div class="p-3 rounded-xl flex items-center justify-between" style="background:var(--cream)">
+                  <div class="flex items-center gap-3">
+                    <div class="text-2xl">🥟</div>
+                    <div>
+                      <p class="font-bold text-xs" style="color:var(--charcoal)">Crispy Vegetable Steamed Momos</p>
+                      <p class="text-[10px]" style="color:var(--cardamom)">🌱 Pure Veg · ₹180</p>
+                    </div>
+                  </div>
+                  <span class="text-xs px-2 py-1 rounded font-bold"
+                    style="background:var(--saffron); color:var(--white)">+ Add</span>
+                </div>
+
+                <!-- Live Order Status Card Widget -->
+                <div class="p-3 rounded-xl border space-y-2"
+                  style="background:var(--charcoal); color:var(--white); border-color:var(--charcoal)">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="font-semibold text-amber-300 flex items-center gap-1">
+                      <span class="animate-spin text-xs">🔥</span> Order #1042 Preparing
+                    </span>
+                    <span class="text-[10px] text-stone-300">Table 3</span>
+                  </div>
+                  <div class="w-full bg-stone-700 h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-amber-400 h-full w-2/3 rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Floating Badge -->
+              <div class="mt-4 text-center">
+                <span
+                  class="bg-amber-500 text-white text-[11px] font-extrabold px-3 py-1.5 rounded-lg shadow-sm border border-amber-400 inline-block">
+                  ⭐ Rated 4.9/5 by Diners
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <section style="background:var(--charcoal); color:var(--white)" class="py-6">
+    <div class="max-w-6xl mx-auto px-5 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+      <div>
+        <p class="display text-2xl md:text-3xl font-bold text-amber-400">&lt; 0.5s</p>
+        <p class="text-xs text-stone-300">Instant Menu Load</p>
+      </div>
+      <div>
+        <p class="display text-2xl md:text-3xl font-bold text-amber-400">100%</p>
+        <p class="text-xs text-stone-300">Contactless Experience</p>
+      </div>
+      <div>
+        <p class="display text-2xl md:text-3xl font-bold text-amber-400">Real-Time</p>
+        <p class="text-xs text-stone-300">Kitchen Live Kanban</p>
+      </div>
+      <div>
+        <p class="display text-2xl md:text-3xl font-bold text-amber-400">AI Powered</p>
+        <p class="text-xs text-stone-300">Smart Diet &amp; Budget Planner</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Grid Section -->
+  <section id="features" class="max-w-6xl mx-auto px-5 py-20">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <p class="eyebrow mb-2">Designed For Excellence</p>
+      <h2 class="display text-3xl md:text-4xl font-bold" style="color:var(--charcoal)">Everything you need for a modern
+        dining experience</h2>
+      <p class="text-sm mt-3" style="color:var(--charcoal-soft)">Powerful features designed to delight customers and
+        streamline kitchen operations.</p>
     </div>
 
-    <div class="badge-row flex flex-wrap items-center justify-center gap-6">
-      <span>📱 Order from your phone</span>
-      <span>🔥 Live kitchen status</span>
-      <span>⭐ Rate every dish</span>
-    </div>
-  </div>
-</section>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-<!-- How it works -->
-<main class="max-w-5xl mx-auto px-5 py-16">
-  <p class="eyebrow text-center mb-2">How it works</p>
-  <h2 class="display text-2xl text-center mb-12">Three steps, zero hassle</h2>
+      <!-- Feature 1 -->
+      <div class="card p-6 feature-card">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4"
+          style="background:var(--cream-deep); border:1px solid var(--clay-line)">
+          📱
+        </div>
+        <h3 class="display text-lg font-bold mb-2" style="color:var(--charcoal)">Instant QR Scan &amp; Order</h3>
+        <p class="text-xs leading-relaxed" style="color:var(--charcoal-soft)">
+          Customers simply scan the table QR code with their smartphone camera to immediately view the menu and place
+          orders. No app installation required.
+        </p>
+      </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-    <div class="card p-6 text-center">
-      <div class="feature-icon mx-auto mb-4">📷</div>
-      <h3 class="font-semibold mb-2">1. Scan</h3>
-      <p class="text-sm" style="color: var(--charcoal-soft)">
-        Point your phone's camera at the QR code on your table — it opens
-        the menu instantly, no app to download.
-      </p>
-    </div>
-    <div class="card p-6 text-center">
-      <div class="feature-icon mx-auto mb-4">🍽️</div>
-      <h3 class="font-semibold mb-2">2. Order</h3>
-      <p class="text-sm" style="color: var(--charcoal-soft)">
-        Not sure what to get? Tell us your mood and we'll point you at
-        something you'll love. Add dishes to your cart and send it straight
-        to the kitchen.
-      </p>
-    </div>
-    <div class="card p-6 text-center">
-      <div class="feature-icon mx-auto mb-4">🔥</div>
-      <h3 class="font-semibold mb-2">3. Track &amp; enjoy</h3>
-      <p class="text-sm" style="color: var(--charcoal-soft)">
-        Watch your order move from Placed → Preparing → Served in real
-        time, right from your phone.
-      </p>
-    </div>
-  </div>
-</main>
+      <!-- Feature 2 -->
+      <div class="card p-6 feature-card">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4"
+          style="background:var(--cream-deep); border:1px solid var(--clay-line)">
+          🤖
+        </div>
+        <h3 class="display text-lg font-bold mb-2" style="color:var(--charcoal)">AI Meal &amp; Budget Planner</h3>
+        <p class="text-xs leading-relaxed" style="color:var(--charcoal-soft)">
+          Input budget limits or group sizes and let our intelligent AI suggest ideal dish combinations, dietary
+          pairings, and allergen-safe meals.
+        </p>
+      </div>
 
-<!-- Footer -->
-<footer style="border-top: 1px solid var(--clay-line); background: var(--cream);">
-  <div class="max-w-5xl mx-auto px-5 py-8 flex flex-col md:flex-row items-center justify-between gap-3 text-sm" style="color: var(--charcoal-soft)">
-    <p>© 2026 Spice Trail. All rights reserved.</p>
-    <a href="admin/login.html" style="color: var(--charcoal-soft); text-decoration:none;">Staff login</a>
-  </div>
-</footer>
+      <!-- Feature 3 -->
+      <div class="card p-6 feature-card">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4"
+          style="background:var(--cream-deep); border:1px solid var(--clay-line)">
+          🔥
+        </div>
+        <h3 class="display text-lg font-bold mb-2" style="color:var(--charcoal)">Live Kitchen Progress</h3>
+        <p class="text-xs leading-relaxed" style="color:var(--charcoal-soft)">
+          Customers see real-time updates as dishes move from Placed to Preparing and Ready. Kitchen staff control
+          status directly via their Kanban board.
+        </p>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="card p-6 feature-card">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4"
+          style="background:var(--cream-deep); border:1px solid var(--clay-line)">
+          👥
+        </div>
+        <h3 class="display text-lg font-bold mb-2" style="color:var(--charcoal)">Group Dining &amp; Cart Sharing</h3>
+        <p class="text-xs leading-relaxed" style="color:var(--charcoal-soft)">
+          Everyone at the table can join a shared group session, add their favorite items to a joint cart, and track
+          total billing transparently.
+        </p>
+      </div>
+
+      <!-- Feature 5 -->
+      <div class="card p-6 feature-card">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4"
+          style="background:var(--cream-deep); border:1px solid var(--clay-line)">
+          🙋
+        </div>
+        <h3 class="display text-lg font-bold mb-2" style="color:var(--charcoal)">1-Click Waiter Assistance</h3>
+        <p class="text-xs leading-relaxed" style="color:var(--charcoal-soft)">
+          Need extra water, cutlery, or the bill check? Diners can tap to send an instant table alert directly to
+          waiting staff devices.
+        </p>
+      </div>
+
+      <!-- Feature 6 -->
+      <div class="card p-6 feature-card">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4"
+          style="background:var(--cream-deep); border:1px solid var(--clay-line)">
+          📊
+        </div>
+        <h3 class="display text-lg font-bold mb-2" style="color:var(--charcoal)">Real-time Analytics</h3>
+        <p class="text-xs leading-relaxed" style="color:var(--charcoal-soft)">
+          Comprehensive administrative suite showing revenue stats, top-selling dishes, peak dining hours, and live
+          inventory control.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="py-20 border-t border-b"
+    style="background:var(--cream-deep); border-color:var(--clay-line)">
+    <div class="max-w-6xl mx-auto px-5">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <p class="eyebrow mb-2">Simplicity First</p>
+        <h2 class="display text-3xl md:text-4xl font-bold" style="color:var(--charcoal)">Three steps to effortless
+          dining</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <!-- Step 1 -->
+        <div class="card p-8 text-center relative" style="background:var(--white)">
+          <div
+            class="w-10 h-10 rounded-full font-extrabold text-sm flex items-center justify-center mx-auto mb-5 shadow-sm"
+            style="background:var(--chili); color:var(--white)">
+            1
+          </div>
+          <h3 class="display text-xl font-bold mb-3" style="color:var(--charcoal)">Scan Table QR</h3>
+          <p class="text-xs leading-relaxed" style="color:var(--charcoal-soft)">
+            Point your smartphone camera at the custom table QR code stand. The full digital menu loads instantly with
+            zero sign-ups needed.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="card p-8 text-center relative" style="background:var(--white)">
+          <div
+            class="w-10 h-10 rounded-full font-extrabold text-sm flex items-center justify-center mx-auto mb-5 shadow-sm"
+            style="background:var(--saffron); color:var(--white)">
+            2
+          </div>
+          <h3 class="display text-xl font-bold mb-3" style="color:var(--charcoal)">Customize &amp; Order</h3>
+          <p class="text-xs leading-relaxed" style="color:var(--charcoal-soft)">
+            Filter by Veg/Non-Veg, ask AI for dietary advice, customize spices, add items to cart, and send order
+            straight to the kitchen.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="card p-8 text-center relative" style="background:var(--white)">
+          <div
+            class="w-10 h-10 rounded-full font-extrabold text-sm flex items-center justify-center mx-auto mb-5 shadow-sm"
+            style="background:var(--cardamom); color:var(--white)">
+            3
+          </div>
+          <h3 class="display text-xl font-bold mb-3" style="color:var(--charcoal)">Track &amp; Enjoy</h3>
+          <p class="text-xs leading-relaxed" style="color:var(--charcoal-soft)">
+            Watch your order status update in real-time, call staff whenever required, and rate your dishes post-meal.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Dual Access Portals Section -->
+  <section id="portals" class="max-w-6xl mx-auto px-5 py-20">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <p class="eyebrow mb-2">System Portals</p>
+      <h2 class="display text-3xl md:text-4xl font-bold" style="color:var(--charcoal)">Choose your view to test</h2>
+      <p class="text-sm mt-2" style="color:var(--charcoal-soft)">Try both customer and restaurant management
+        experiences.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+      <!-- Customer Portal Card -->
+      <div class="card p-8 border-2 flex flex-col justify-between" style="border-color:var(--saffron)">
+        <div>
+          <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider mb-4 inline-block"
+            style="background:var(--cream-deep); color:var(--saffron-deep)">
+            Customer Experience
+          </span>
+          <h3 class="display text-2xl font-bold mb-3" style="color:var(--charcoal)">Diner &amp; Table Portal</h3>
+          <p class="text-xs leading-relaxed mb-6" style="color:var(--charcoal-soft)">
+            Test how customers interact with the menu, add dishes to cart, request waiter help, use AI planners, and
+            track orders.
+          </p>
+
+          <div class="space-y-2 mb-6 text-xs font-semibold">
+            <a href="customer/menu.html?table=1"
+              class="flex items-center justify-between p-3 rounded-lg hover:bg-amber-50 transition-colors border border-stone-200 text-stone-800 no-underline">
+              <span>🍽️ Open Table 1 Menu</span>
+              <span>→</span>
+            </a>
+            <a href="customer/cart.html"
+              class="flex items-center justify-between p-3 rounded-lg hover:bg-amber-50 transition-colors border border-stone-200 text-stone-800 no-underline">
+              <span>🧺 View Active Cart &amp; Group Session</span>
+              <span>→</span>
+            </a>
+            <a href="customer/order-status.html"
+              class="flex items-center justify-between p-3 rounded-lg hover:bg-amber-50 transition-colors border border-stone-200 text-stone-800 no-underline">
+              <span>🔥 Live Order Status Tracker</span>
+              <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="customer/menu.html?table=1"
+          class="btn-primary w-full py-3 text-center text-xs font-bold no-underline block">
+          Launch Customer Interface →
+        </a>
+      </div>
+
+      <!-- Admin & Staff Portal Card -->
+      <div class="card p-8 border-2 flex flex-col justify-between" style="border-color:var(--clay-line)">
+        <div>
+          <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider mb-4 inline-block"
+            style="background:var(--charcoal); color:var(--cream)">
+            Restaurant Operations
+          </span>
+          <h3 class="display text-2xl font-bold mb-3" style="color:var(--charcoal)">Kitchen &amp; Admin Suite</h3>
+          <p class="text-xs leading-relaxed mb-6" style="color:var(--charcoal-soft)">
+            Test live order kanban, waiter call alerts, menu item stock management, QR code table generators, and sales
+            analytics.
+          </p>
+
+          <div class="space-y-2 mb-6 text-xs font-semibold">
+            <a href="admin/login.html"
+              class="flex items-center justify-between p-3 rounded-lg hover:bg-stone-100 transition-colors border border-stone-200 text-stone-800 no-underline">
+              <span>👨‍🍳 Staff Login &amp; Authentication</span>
+              <span>→</span>
+            </a>
+            <a href="admin/dashboard.html"
+              class="flex items-center justify-between p-3 rounded-lg hover:bg-stone-100 transition-colors border border-stone-200 text-stone-800 no-underline">
+              <span>🍳 Kitchen Order Kanban &amp; Waiter Calls</span>
+              <span>→</span>
+            </a>
+            <a href="admin/menu-manage.html"
+              class="flex items-center justify-between p-3 rounded-lg hover:bg-stone-100 transition-colors border border-stone-200 text-stone-800 no-underline">
+              <span>📝 Menu Items &amp; Stock Controller</span>
+              <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="admin/login.html" class="btn-secondary w-full py-3 text-center text-xs font-bold no-underline block">
+          Go to Staff Login →
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="border-top: 1px solid var(--clay-line); background: var(--cream);" class="mt-auto">
+    <div class="max-w-6xl mx-auto px-5 py-10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs"
+      style="color: var(--charcoal-soft)">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🌿</span>
+        <span class="font-bold text-stone-900 display text-sm">Spice Trail</span>
+        <span>— Smart Contactless QR Dining System</span>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <a href="customer/menu.html?table=1" class="hover:underline text-stone-700">Customer Menu</a>
+        <a href="admin/login.html" class="hover:underline text-stone-700">Staff Portal</a>
+        <a href="admin/dashboard.html" class="hover:underline text-stone-700">Kitchen Board</a>
+      </div>
+
+      <p>© 2026 Spice Trail. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("hero-launch-btn").onclick = () => {
+      const tableNum = document.getElementById("hero-table-select").value || 1;
+      window.location.href = `customer/menu.html?table=${tableNum}`;
+    };
+  </script>
 
 </body>
+
 </html>

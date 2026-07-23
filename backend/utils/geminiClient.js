@@ -3,14 +3,8 @@ const axios = require("axios");
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
-/**
- * Asks Gemini to recommend dishes from the restaurant's actual menu
- * based on the customer's free-text preference.
- *
- * @param {string} preferenceText - e.g. "something spicy and quick, veg, under 200 rupees"
- * @param {Array} menuItems - array of { name, category, price, isVeg, avgPrepTimeMinutes }
- * @returns {Promise<string[]>} array of dish names Gemini suggests (unvalidated - caller must cross-check against DB)
- */
+// Asks Gemini to recommend dishes from the restaurant
+
 async function getMenuRecommendations(preferenceText, menuItems) {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error("GEMINI_API_KEY is not configured");
@@ -19,8 +13,7 @@ async function getMenuRecommendations(preferenceText, menuItems) {
   const menuSummary = menuItems
     .map(
       (item) =>
-        `- ${item.name} | ${item.category} | ₹${item.price} | ${
-          item.isVeg ? "Veg" : "Non-Veg"
+        `- ${item.name} | ${item.category} | ₹${item.price} | ${item.isVeg ? "Veg" : "Non-Veg"
         } | ~${item.avgPrepTimeMinutes} min`
     )
     .join("\n");
@@ -49,8 +42,8 @@ If nothing matches well, respond with an empty array: []`;
   const rawText =
     response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
 
-  // Strip markdown code fences if Gemini adds them despite instructions
-  const cleaned = rawText.replace(/```json|```/g, "").trim();
+
+  const cleaned = rawText.replace(/```json|```/g, "").trim(); // Strip markdown code fences if Gemini adds them despite instructions
 
   try {
     const parsed = JSON.parse(cleaned);
@@ -61,16 +54,15 @@ If nothing matches well, respond with an empty array: []`;
   }
 }
 
-/**
- * Answers a customer's dietary/allergen question using ONLY the verified
- * allergens/dietaryTags stored on each menu item. Never lets the model
- * guess ingredients it wasn't given - this matters because a wrong answer
- * here is a safety issue, not just a bad suggestion.
- *
- * @param {string} question - e.g. "does the Butter Chicken have nuts?"
- * @param {Array} menuItems - array of { name, category, isVeg, allergens, dietaryTags }
- * @returns {Promise<string>} a short plain-text answer
- */
+
+
+
+
+
+
+
+// Answers a customer allergen question 
+
 async function getDietaryAnswer(question, menuItems) {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error("GEMINI_API_KEY is not configured");
@@ -114,18 +106,12 @@ Rules you MUST follow:
   return rawText.trim();
 }
 
-/**
- * Asks Gemini to plan a full group order - which dishes and how many of
- * each - that fits a budget and feeds a given number of people.
- *
- * @param {object} params
- * @param {number} params.people
- * @param {number} params.totalBudget
- * @param {string} params.meal - "lunch" | "dinner"
- * @param {string} params.diet - "veg" | "non-veg" | "both"
- * @param {Array} params.menuItems - array of { name, category, price, isVeg, avgPrepTimeMinutes }
- * @returns {Promise<Array<{name: string, quantity: number}>>} unvalidated - caller must cross-check against DB and compute totals itself
- */
+
+
+
+
+//  food planner
+
 async function getMealPlan({ people, totalBudget, meal, diet, menuItems }) {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error("GEMINI_API_KEY is not configured");

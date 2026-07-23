@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Table QR Codes</title>
+<title>Table QR Codes · Spice Trail Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -18,59 +18,52 @@
   .qr-card canvas { margin: 0 auto; }
 </style>
 </head>
-<body>
+<body class="pb-16" style="background:var(--cream)">
 
-<header class="sticky top-0 z-30" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
-  <div class="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
-    <div>
-      <p class="eyebrow">Setup</p>
-      <h1 class="display text-2xl">Table QR Codes</h1>
+<header class="sticky top-0 z-30 shadow-sm" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
+  <div class="max-w-5xl mx-auto px-5 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="dashboard.html" class="btn-secondary px-3 py-1.5 text-xs no-underline flex items-center gap-1 font-semibold">
+        <span>←</span> <span>Dashboard</span>
+      </a>
+      <div>
+        <p class="eyebrow">Table Management</p>
+        <h1 class="display text-xl font-bold">Generate Table QR Codes</h1>
+      </div>
     </div>
-    <nav class="flex items-center gap-4 text-sm font-semibold">
-      <a href="dashboard.html" style="color: var(--charcoal); text-decoration:none;">← Dashboard</a>
-    </nav>
   </div>
 </header>
 
-<main class="max-w-5xl mx-auto px-5 py-8">
+<main class="max-w-5xl mx-auto px-5 py-6 space-y-6">
 
-  <div id="origin-banner" class="card p-4 mb-6 text-sm"></div>
+  <div id="origin-banner" class="card p-4 text-xs"></div>
 
-  <div id="controls" class="card p-5 mb-8 flex flex-wrap items-end gap-4">
+  <div id="controls" class="card p-5 shadow-sm flex flex-wrap items-end gap-4">
     <div>
-      <label class="text-sm font-semibold block mb-1">Number of tables</label>
+      <label class="text-xs font-semibold block mb-1">Number of Tables</label>
       <input id="table-count" type="number" min="1" max="100" value="10"
-        class="px-3 py-2 rounded-lg text-sm w-28" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" />
+        class="px-3 py-2 rounded-lg text-xs w-28" style="border:1.5px solid var(--clay-line); background:var(--white); outline:none;" />
     </div>
-    <button id="generate-btn" class="btn-primary px-4 py-2">Generate</button>
-    <button id="print-btn" class="btn-secondary px-4 py-2">Print / Save as PDF</button>
+    <button id="generate-btn" class="btn-primary px-5 py-2.5 text-xs font-semibold">Generate QRs →</button>
+    <button id="print-btn" class="btn-secondary px-4 py-2.5 text-xs font-semibold">Print / Save as PDF 🖨️</button>
   </div>
 
   <div id="qr-grid" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
 </main>
 
 <script>
-  // Build the base URL from wherever THIS page was loaded from — if you open
-  // it via your computer's LAN IP, the QR codes will encode that IP, so
-  // phones on the same Wi-Fi can actually reach it. If you open it via
-  // "localhost", the QR codes will be useless to any other device.
   const origin = window.location.origin;
   const isLocalhost = /^(https?:\/\/)?(localhost|127\.0\.0\.1|\[::1?\])/i.test(origin);
 
   const banner = document.getElementById("origin-banner");
   if (isLocalhost) {
     banner.innerHTML = `
-      ⚠️ <strong>You opened this page via "localhost"</strong> — the QR codes below will only work on
-      <em>this</em> computer, not on customers' phones.<br/>
-      To make them scannable, find this computer's local network (Wi-Fi) IP address and reload this
-      page using that instead, e.g. <code>http://192.168.1.42:3000/admin/tables.html</code>.<br/>
-      <span style="color: var(--charcoal-soft)">
-        Mac: System Settings → Wi-Fi → Details → IP Address (or run <code>ipconfig getifaddr en0</code> in Terminal).<br/>
-        Windows: run <code>ipconfig</code> in Command Prompt and look for "IPv4 Address".
-      </span>`;
-    banner.style.borderColor = "var(--chili)";
+      ⚠️ <strong>You opened this page via "localhost"</strong> — the QR codes below will work on this computer.<br/>
+      To test on real phones on the same Wi-Fi, find your computer's IP address (e.g. <code>http://192.168.1.42:3000/admin/tables.html</code>).
+    `;
+    banner.style.borderColor = "var(--saffron)";
   } else {
-    banner.innerHTML = `✅ Generating QR codes for <strong>${origin}</strong> — make sure customers' phones are on the same Wi-Fi network as this computer.`;
+    banner.innerHTML = `✅ Generating QR codes for <strong>${origin}</strong> — customers scanning these will be sent directly to their table menu.`;
     banner.style.borderColor = "var(--cardamom)";
   }
 
@@ -83,18 +76,18 @@
       const url = `${origin}/customer/menu.html?table=${table}`;
 
       const card = document.createElement("div");
-      card.className = "card qr-card p-4 text-center";
+      card.className = "card qr-card p-4 text-center shadow-sm";
       card.innerHTML = `
         <p class="eyebrow mb-2">Table ${table}</p>
         <div class="qr-box flex justify-center mb-2"></div>
-        <p class="text-xs break-all" style="color: var(--charcoal-soft)">${url}</p>
+        <p class="text-[11px] break-all" style="color: var(--charcoal-soft)">${url}</p>
       `;
       grid.appendChild(card);
 
       new QRCode(card.querySelector(".qr-box"), {
         text: url,
-        width: 160,
-        height: 160,
+        width: 150,
+        height: 150,
         colorDark: "#2B2420",
         colorLight: "#FFFDF9",
       });

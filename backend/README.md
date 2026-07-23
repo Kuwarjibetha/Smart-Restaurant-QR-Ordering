@@ -4,6 +4,9 @@ This backend is the API server for a smart restaurant QR ordering system.
 It uses Node.js, Express, MongoDB (Mongoose), Socket.io, JWT auth, and Gemini
 AI for menu recommendations and dietary questions.
 
+The repository's canonical frontend is `frontend/`. The local duplicate
+`frontend 5/` is ignored by Git and is not used for setup or deployment.
+
 ## What the backend does
 
 - Hosts REST API routes for menu, orders, tables, feedback, auth, and analytics.

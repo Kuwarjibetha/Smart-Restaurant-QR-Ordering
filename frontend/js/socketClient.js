@@ -41,7 +41,7 @@ function connectAsCustomer(tableNumber, onStatusUpdate, onWaiterCallResolved) {
   }
 }
 
-function connectAsKitchen({ onNewOrder, onStatusUpdate }) {
+function connectAsKitchen({ onNewOrder, onStatusUpdate, onNewWaiterCall, onWaiterCallResolved }) {
   if (typeof io === "undefined") {
     console.warn("Socket.io not available - live updates disabled, falling back to manual refresh.");
     return null;
@@ -65,6 +65,8 @@ function connectAsKitchen({ onNewOrder, onStatusUpdate }) {
 
     if (onNewOrder) socket.on("newOrder", onNewOrder);
     if (onStatusUpdate) socket.on("orderStatusUpdate", onStatusUpdate);
+    if (onNewWaiterCall) socket.on("newWaiterCall", onNewWaiterCall);
+    if (onWaiterCallResolved) socket.on("waiterCallResolvedBroadcast", onWaiterCallResolved);
 
     return socket;
   } catch (err) {

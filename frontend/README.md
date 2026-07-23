@@ -4,6 +4,9 @@ This frontend provides the customer and admin user experience for the QR
 ordering app. It is built with plain HTML, CSS, and vanilla JavaScript, and
 connects to the backend API for data, authentication, and live updates.
 
+This is the canonical frontend directory. The local duplicate `frontend 5/`
+is ignored by Git and is not used for development or deployment.
+
 ## What this frontend includes
 
 - Customer menu and cart pages

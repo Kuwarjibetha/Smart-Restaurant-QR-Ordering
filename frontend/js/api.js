@@ -61,6 +61,8 @@ const api = {
   // Waiter calls
   createWaiterCall: (tableNumber, requestType) =>
     apiRequest("/waiter-call", { method: "POST", body: { tableNumber, requestType } }),
+  getActiveWaiterCalls: () => apiRequest("/waiter-call", { auth: true }),
+  resolveWaiterCall: (id) => apiRequest(`/waiter-call/${id}`, { method: "PATCH", auth: true }),
 
   // Tables
   getTables: () => apiRequest("/tables", { auth: true }),
