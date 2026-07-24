@@ -4,7 +4,6 @@ const http = require("http");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
-
 const { initSocket } = require("./socket/socketHandler");
 
 const authRoutes = require("./routes/authRoutes");
@@ -43,16 +42,23 @@ app.use("/api/sessions", groupSessionRoutes);
 app.use("/api/waiter-call", waiterCallRoutes);
 app.use("/api/plan-meal", mealPlannerRoutes);
 
+
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
+
+
+
 
 // Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({ error: err.message || "Internal server error" });
 });
+
+
 
 const PORT = process.env.PORT || 5000;
 

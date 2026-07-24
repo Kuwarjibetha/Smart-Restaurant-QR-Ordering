@@ -5,9 +5,7 @@ const Table = require("../models/Table");
 const { estimateWaitTime } = require("../utils/waitTime");
 const { emitNewOrder, emitOrderStatusUpdate } = require("../socket/socketHandler");
 
-// POST /api/orders (public)
-// SECURITY: frontend se bheji gayi price/name pe kabhi trust mat karo.
-// Sab kuch server side pe DB se verify karke calculate hota hai.
+
 async function createOrder(req, res) {
   try {
     const { tableNumber, tableCode, items, customerName, customerMobile } = req.body;

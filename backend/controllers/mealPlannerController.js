@@ -29,7 +29,7 @@ async function planMeal(req, res) {
 
     const filter = { available: true };
     if (diet === "veg") filter.isVeg = true;
-    // "non-veg" still allows veg sides/drinks alongside non-veg mains, so no isVeg filter there
+   
     const menuItems = await MenuItem.find(filter);
 
     if (menuItems.length === 0) {
@@ -38,8 +38,6 @@ async function planMeal(req, res) {
 
     const suggestedNames = await getMealPlan({ people, totalBudget, meal, diet, menuItems });
 
-    // Cross-check every suggested dish + quantity against the real menu and
-    // compute the total ourselves - never trust Gemini's arithmetic or dish names.
     const menuMap = new Map(menuItems.map((m) => [m.name.trim().toLowerCase(), m]));
     const items = [];
     let estimatedTotal = 0;

@@ -1,5 +1,3 @@
-// askMenu.js — handles the "allergy or dietary question?" box on the menu page.
-
 async function handleAskMenuSubmit(inputEl, resultEl) {
   const question = inputEl.value.trim();
   if (!question) return;
@@ -8,14 +6,10 @@ async function handleAskMenuSubmit(inputEl, resultEl) {
 
   try {
     const { answer } = await api.askMenu(question);
-
-    // The disclaimer is fixed text, not something the model writes - this
-    // is intentional. A wrong allergen answer is a safety issue, so every
-    // response gets the same reminder regardless of how confident it sounds.
     resultEl.innerHTML = `
       <p class="text-sm mb-2">${escapeHtml(answer)}</p>
       <p class="text-xs" style="color: var(--saffron-deep)">
-        ⚠️ Always double-check with staff before ordering if you have a serious allergy.
+         Always double-check with staff before ordering if you have a serious allergy.
       </p>
     `;
   } catch (err) {

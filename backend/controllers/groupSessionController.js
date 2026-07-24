@@ -14,8 +14,8 @@ function generateHostToken() {
   return crypto.randomBytes(16).toString("hex");
 }
 
-// POST /api/sessions (public) - a customer starts a group order for their table
-async function createSession(req, res) {
+
+async function createSession(req, res) {                // POST /api/sessions (public) a customer starts a group order for their table
   try {
     const { tableNumber, tableCode, hostDeviceId, hostName } = req.body;
     const identifier = String(tableCode || tableNumber || "").trim();
@@ -43,7 +43,7 @@ async function createSession(req, res) {
       items: [],
     });
 
-    // hostToken is returned ONLY here, to the creator's device - never again
+
     res.status(201).json({
       session: session.toPublicJSON(),
       sessionCode: session.sessionCode,
@@ -54,7 +54,7 @@ async function createSession(req, res) {
   }
 }
 
-// GET /api/sessions/:code (public) - fetch current shared cart state (join + polling fallback)
+                            // GET /api/sessions/:code (public)  fetch current shared cart state (join + polling fallback)
 async function getSession(req, res) {
   try {
     const session = await GroupSession.findOne({ sessionCode: req.params.code });
@@ -65,8 +65,8 @@ async function getSession(req, res) {
   }
 }
 
-// POST /api/sessions/:code/items (public) - add a dish to the shared cart
-async function addItem(req, res) {
+
+async function addItem(req, res) { // POST /api/sessions/:code/items public  add a dish to the shared cart
   try {
     const { menuItemId, quantity, deviceId, name } = req.body;
     if (!menuItemId || !deviceId) {
@@ -79,7 +79,7 @@ async function addItem(req, res) {
       return res.status(400).json({ error: "This group order is no longer open" });
     }
 
-    // Server-authoritative price/name/availability - never trust the client for these
+    // Server-authoritative price/name/availability  never trust the client for these
     const menuItem = await MenuItem.findById(menuItemId);
     if (!menuItem || !menuItem.available) {
       return res.status(400).json({ error: "That dish is not available" });
@@ -104,9 +104,9 @@ async function addItem(req, res) {
   }
 }
 
-// DELETE /api/sessions/:code/items/:itemId (public)
-// Only the guest who added the item, or the host, can remove it.
-async function removeItem(req, res) {
+
+
+async function removeItem(req, res) {       // DELETE /api/sessions/:code/items/:itemId public Only the guest who added the item, or the host, can remove it.
   try {
     const { deviceId, hostToken } = req.body;
     const session = await GroupSession.findOne({ sessionCode: req.params.code });
@@ -136,8 +136,8 @@ async function removeItem(req, res) {
   }
 }
 
-// PATCH /api/sessions/:code/confirm (public, requires hostToken)
-// Turns the shared cart into a real Order, exactly like a normal single-device order.
+// PATCH /api/sessions/:code/confirm (public, requires hostToken) Turns the shared cart into a real Order, exactly like a normal single-device order.
+
 async function confirmSession(req, res) {
   try {
     const { hostToken } = req.body;
@@ -153,8 +153,7 @@ async function confirmSession(req, res) {
       return res.status(400).json({ error: "Add at least one item before confirming" });
     }
 
-    // Re-verify every item against the live menu - prices/availability may
-    // have changed since items were added to the shared cart earlier.
+    // Re-verify every item against the live menu - prices/availability may have changed since items were added to the shared cart earlier.
     const menuItemIds = session.items.map((i) => i.menuItemId);
     const menuItems = await MenuItem.find({ _id: { $in: menuItemIds } });
     const menuItemMap = new Map(menuItems.map((m) => [m._id.toString(), m]));

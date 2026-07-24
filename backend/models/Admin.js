@@ -28,8 +28,8 @@ const adminSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Hash password before saving, only if it was modified
-adminSchema.pre("save", async function (next) {
+
+adminSchema.pre("save", async function (next) {     // Hash password before saving, only if it was modified
   if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
@@ -40,8 +40,8 @@ adminSchema.methods.comparePassword = function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Never send password hash back in API responses
-adminSchema.set("toJSON", {
+
+adminSchema.set("toJSON", { // Never send password hash back in API responses
   transform: (doc, ret) => {
     delete ret.password;
     return ret;

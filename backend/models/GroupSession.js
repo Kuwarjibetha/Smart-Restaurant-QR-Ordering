@@ -81,8 +81,8 @@ const groupSessionSchema = new mongoose.Schema(
 // Auto-delete stale/abandoned sessions from MongoDB once expiresAt passes
 groupSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-// Never send hostToken down to guest devices
-groupSessionSchema.methods.toPublicJSON = function () {
+
+groupSessionSchema.methods.toPublicJSON = function () { // Never send hostToken down to guest devices
     const obj = this.toObject();
     delete obj.hostToken;
     return obj;

@@ -1,5 +1,3 @@
-// recommend.js — handles the "what should I eat?" text box on the menu page.
-
 async function handleRecommendSubmit(inputEl, resultsEl) {
   const text = inputEl.value.trim();
   if (!text) return;

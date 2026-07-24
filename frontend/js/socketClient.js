@@ -1,12 +1,7 @@
-// socketClient.js — wraps Socket.io connection logic.
-// Requires the Socket.io client script to be loaded on the page first:
-// <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
 const SOCKET_URL = "https://smart-restaurant-qr-ordering.onrender.com";
 
-// Live updates are a nice-to-have layer on top of the REST API - if the
-// socket.io library didn't load (blocked network, slow CDN, etc.) the rest
-// of the page must keep working via plain fetch + manual refresh, not crash.
+
 function connectAsCustomer(tableNumber, onStatusUpdate, onWaiterCallResolved) {
   if (typeof io === "undefined") {
     console.warn("Socket.io not available - live updates disabled, falling back to manual refresh.");
@@ -75,8 +70,7 @@ function connectAsKitchen({ onNewOrder, onStatusUpdate, onNewWaiterCall, onWaite
   }
 }
 
-// Every phone viewing a group order connects here - joins that session's
-// own room so shared-cart updates only reach that group, not everyone.
+
 function connectToGroupSession(sessionCode, { onSessionUpdate, onSessionConfirmed }) {
   if (typeof io === "undefined") {
     console.warn("Socket.io not available - falling back to manual polling for this group order.");

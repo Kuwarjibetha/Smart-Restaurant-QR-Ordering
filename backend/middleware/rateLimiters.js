@@ -1,5 +1,10 @@
 const rateLimit = require("express-rate-limit");
 
+
+
+
+
+
 // Protects /api/recommend from abuse since every call costs a Gemini API request
 const recommendLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
@@ -10,6 +15,8 @@ const recommendLimiter = rateLimit({
     error: "Too many recommendation requests. Please wait a moment and try again.",
   },
 });
+
+
 
 // Protects /api/menu/ask from abuse since every call costs a Gemini API request
 const askMenuLimiter = rateLimit({
@@ -22,6 +29,10 @@ const askMenuLimiter = rateLimit({
   },
 });
 
+
+
+
+
 // General light protection for public ordering endpoints
 const orderLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -31,9 +42,7 @@ const orderLimiter = rateLimit({
   message: { error: "Too many requests. Please slow down." },
 });
 
-// Higher limit for GET /api/sessions/:code - this gets polled every few
-// seconds per device as a fallback if a phone's socket connection drops,
-// so it needs more headroom than the mutating session endpoints.
+
 const sessionPollLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 60,
@@ -52,5 +61,6 @@ const mealPlanLimiter = rateLimit({
     error: "Too many planning requests. Please wait a moment and try again.",
   },
 });
+
 
 module.exports = { recommendLimiter, askMenuLimiter, orderLimiter, sessionPollLimiter, mealPlanLimiter };

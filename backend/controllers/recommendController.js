@@ -19,8 +19,7 @@ async function recommend(req, res) {
 
     const suggestedNames = await getMenuRecommendations(preferenceText, menuItems);
 
-    // Cross-check Gemini's suggestions against the real menu to avoid
-    // returning hallucinated dish names that don't actually exist.
+  
     const menuNameSet = new Map(
       menuItems.map((m) => [m.name.trim().toLowerCase(), m])
     );

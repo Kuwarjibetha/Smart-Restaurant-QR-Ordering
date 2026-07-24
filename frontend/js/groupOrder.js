@@ -1,11 +1,3 @@
-// groupOrder.js — group ordering: multiple phones share one cart for a table,
-// and only the person who started it ("the host") can confirm it.
-//
-// Identity model: no accounts. Each browser gets a random deviceId saved in
-// localStorage the first time it visits. The session's unguessable code
-// (in the shared link) is the only thing that lets a phone into a group's
-// shared cart - there's no way to browse "sessions for table 5".
-
 let groupSocket = null;
 let currentSession = null; // last known session state from server/socket
 
@@ -31,8 +23,7 @@ function storeHostToken(sessionCode, hostToken) {
   localStorage.setItem(`groupHost:${sessionCode}`, hostToken);
 }
 
-// Call once on page load. Renders the "start / active" banner into bannerEl
-// and returns true if this page load is part of an active group order.
+
 async function initGroupOrder(tableNumber, bannerEl, onCartChanged) {
   const existingCode = getSessionCodeFromUrl();
 
@@ -61,13 +52,11 @@ function connectGroupSocket(sessionCode, bannerEl, onCartChanged) {
       if (onCartChanged) onCartChanged();
     },
     onSessionConfirmed: (order) => {
-      // Everyone in the group gets sent to track the real order once the host confirms
       window.location.href = `order-status.html?table=${order.tableCode || order.tableNumber}`;
     },
   });
 
-  // Fallback in case the socket never connects (matches the same pattern
-  // used elsewhere in this app - a periodic refresh so nothing goes stale)
+
   setInterval(async () => {
     if (!groupSocket || !groupSocket.connected) {
       try {
@@ -76,7 +65,7 @@ function connectGroupSocket(sessionCode, bannerEl, onCartChanged) {
         renderActiveBanner(sessionCode, bannerEl, onCartChanged);
         if (onCartChanged) onCartChanged();
       } catch (err) {
-        // session may have expired - banner already shows current items, leave as-is
+        
       }
     }
   }, 8000);
@@ -175,8 +164,7 @@ function getDisplayName() {
   return name;
 }
 
-// Returns true if it handled the add (group mode active), false if the
-// caller should fall back to the normal private localStorage cart.
+// Returns true if it handled the add (group mode active)
 async function groupOrderAddItem(menuItem) {
   if (!currentSession) return false;
   const sessionCode = currentSession.sessionCode;

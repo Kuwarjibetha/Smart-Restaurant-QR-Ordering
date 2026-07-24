@@ -98,7 +98,7 @@ h1, h2, h3, .display {
   }
 }
 
-/* --- Clean Text Dish Cards (NO FOOD PHOTOS) --- */
+
 .dish-grid {
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));
@@ -152,7 +152,8 @@ h1, h2, h3, .display {
   color: var(--white);
 }
 
-/* Floating Bottom Bar */
+
+
 .floating-cart-bar {
   position: fixed;
   bottom: 16px;
@@ -171,7 +172,7 @@ h1, h2, h3, .display {
   z-index: 40;
 }
 
-/* Horizontal Kitchen Board */
+
 .kanban-horizontal {
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));

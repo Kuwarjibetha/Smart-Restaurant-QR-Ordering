@@ -1,6 +1,3 @@
-// api.js — thin wrapper around fetch for talking to the backend.
-// Change API_BASE if your backend runs somewhere other than localhost:5000.
-
 const API_BASE = "https://smart-restaurant-qr-ordering.onrender.com/api";
 
 async function apiRequest(path, { method = "GET", body, auth = false } = {}) {
@@ -41,8 +38,12 @@ const api = {
   // Recommend
   recommend: (preferenceText) => apiRequest("/recommend", { method: "POST", body: { preferenceText } }),
 
+
+  
   // Dietary / allergen Q&A
   askMenu: (question) => apiRequest("/menu/ask", { method: "POST", body: { question } }),
+
+
 
   // Group ordering
   createGroupSession: (tableIdentifier, hostDeviceId, hostName) =>
