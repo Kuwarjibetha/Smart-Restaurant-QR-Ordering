@@ -2,7 +2,7 @@
 // Requires the Socket.io client script to be loaded on the page first:
 // <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
-const SOCKET_URL = "http://localhost:5000";
+const SOCKET_URL = "https://smart-restaurant-qr-ordering.onrender.com";
 
 // Live updates are a nice-to-have layer on top of the REST API - if the
 // socket.io library didn't load (blocked network, slow CDN, etc.) the rest

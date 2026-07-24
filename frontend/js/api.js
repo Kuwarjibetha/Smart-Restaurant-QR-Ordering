@@ -1,7 +1,7 @@
 // api.js — thin wrapper around fetch for talking to the backend.
 // Change API_BASE if your backend runs somewhere other than localhost:5000.
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://smart-restaurant-qr-ordering.onrender.com/api";
 
 async function apiRequest(path, { method = "GET", body, auth = false } = {}) {
   const headers = { "Content-Type": "application/json" };
