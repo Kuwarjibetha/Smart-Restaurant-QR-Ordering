@@ -5,10 +5,10 @@ function initSocket(io) {
     console.log(`Socket connected: ${socket.id}`);
 
     
-    socket.on("joinTable", (tableNumber) => {   // Customer joins their own table's room to receive live status updates
-      const num = Number(tableNumber);
-      if (!Number.isInteger(num) || num <= 0) {
-        return socket.emit("error", { message: "Invalid table number" });
+    socket.on("joinTable", (identifier) => {
+      const idStr = String(identifier || "").trim();
+      if (!idStr) {
+        return socket.emit("error", { message: "Invalid table identifier" });
       }
       
       // Leave any previously joined table rooms first
@@ -16,8 +16,8 @@ function initSocket(io) {
         .filter((r) => r.startsWith("table-"))
         .forEach((r) => socket.leave(r));
 
-      socket.join(`table-${num}`);
-      socket.emit("joinedTable", { tableNumber: num });
+      socket.join(`table-${idStr}`);
+      socket.emit("joinedTable", { tableIdentifier: idStr });
     });
 
     // Kitchen/admin dashboard joins the kitchen room, but must present a valid JWT
@@ -31,14 +31,12 @@ function initSocket(io) {
       }
     });
 
-    // Every phone viewing a group order joins that session's own room, so
-    // shared-cart updates only broadcast to that group, not the whole restaurant.
+    // Every phone viewing a group order joins that session's own room
     socket.on("joinSession", (sessionCode) => {
       if (!sessionCode || typeof sessionCode !== "string") {
         return socket.emit("error", { message: "Invalid session code" });
       }
 
-      // Leave any previously joined session rooms first
       Array.from(socket.rooms)
         .filter((r) => r.startsWith("session-"))
         .forEach((r) => socket.leave(r));
@@ -53,15 +51,16 @@ function initSocket(io) {
   });
 }
 
-
 function emitNewOrder(io, order) {
   io.to("kitchen").emit("newOrder", order);
 }
 
-
 function emitOrderStatusUpdate(io, tableNumber, order) {
   io.to(`table-${tableNumber}`).emit("orderStatusUpdate", order);
-  io.to("kitchen").emit("orderStatusUpdate", order); // keep kitchen dashboard in sync too
+  if (order.tableCode) {
+    io.to(`table-${order.tableCode}`).emit("orderStatusUpdate", order);
+  }
+  io.to("kitchen").emit("orderStatusUpdate", order);
 }
 
 // Broadcasts the shared cart's new state to everyone currently viewing this group order

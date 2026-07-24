@@ -51,6 +51,7 @@
   <div id="qr-grid" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
 </main>
 
+<script src="../js/api.js"></script>
 <script>
   const origin = window.location.origin;
   const isLocalhost = /^(https?:\/\/)?(localhost|127\.0\.0\.1|\[::1?\])/i.test(origin);
@@ -63,22 +64,40 @@
     `;
     banner.style.borderColor = "var(--saffron)";
   } else {
-    banner.innerHTML = `✅ Generating QR codes for <strong>${origin}</strong> — customers scanning these will be sent directly to their table menu.`;
+    banner.innerHTML = `✅ Generating QR codes for <strong>${origin}</strong> — customers scanning these will be sent directly to their secure unguessable table menu.`;
     banner.style.borderColor = "var(--cardamom)";
   }
 
-  function generate() {
+  function generateRandomCode(num) {
+    return `tbl_${num}_` + Array.from(crypto.getRandomValues(new Uint8Array(4)), b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function generate() {
     const count = Math.max(1, Math.min(100, Number(document.getElementById("table-count").value) || 10));
     const grid = document.getElementById("qr-grid");
+    grid.innerHTML = "<p class='col-span-full text-center text-xs text-stone-500 py-4'>Loading secure table codes...</p>";
+
+    let dbTablesMap = {};
+    try {
+      const { tables } = await api.getTables();
+      if (tables) {
+        tables.forEach(t => { dbTablesMap[t.tableNumber] = t.tableCode; });
+      }
+    } catch (e) {
+      console.warn("Using offline table code generator fallback");
+    }
+
     grid.innerHTML = "";
 
     for (let table = 1; table <= count; table++) {
-      const url = `${origin}/customer/menu.html?table=${table}`;
+      const tableCode = dbTablesMap[table] || generateRandomCode(table);
+      const url = `${origin}/customer/menu.html?table=${tableCode}`;
 
       const card = document.createElement("div");
       card.className = "card qr-card p-4 text-center shadow-sm";
       card.innerHTML = `
-        <p class="eyebrow mb-2">Table ${table}</p>
+        <p class="eyebrow mb-1">Table ${table}</p>
+        <p class="text-[10px] font-mono text-stone-400 mb-2">${tableCode}</p>
         <div class="qr-box flex justify-center mb-2"></div>
         <p class="text-[11px] break-all" style="color: var(--charcoal-soft)">${url}</p>
       `;

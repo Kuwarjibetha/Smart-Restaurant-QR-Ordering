@@ -62,7 +62,7 @@ function connectGroupSocket(sessionCode, bannerEl, onCartChanged) {
     },
     onSessionConfirmed: (order) => {
       // Everyone in the group gets sent to track the real order once the host confirms
-      window.location.href = `order-status.html?table=${order.tableNumber}`;
+      window.location.href = `order-status.html?table=${order.tableCode || order.tableNumber}`;
     },
   });
 

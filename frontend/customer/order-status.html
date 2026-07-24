@@ -14,9 +14,14 @@
 
 <header class="sticky top-0 z-30 shadow-sm" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
   <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-    <div>
-      <span id="table-label" class="eyebrow">Table —</span>
-      <h1 class="display text-xl font-bold">Order Tracker</h1>
+    <div class="flex items-center gap-3">
+      <a id="back-to-menu-header" href="menu.html" class="btn-secondary px-3 py-1.5 text-xs no-underline flex items-center gap-1 font-semibold">
+        <span>←</span> <span>Menu</span>
+      </a>
+      <div>
+        <span id="table-label" class="eyebrow">Table —</span>
+        <h1 class="display text-xl font-bold">Order Tracker</h1>
+      </div>
     </div>
     <a href="menu.html" id="order-more-header" class="btn-secondary px-3 py-1.5 text-xs no-underline font-semibold flex items-center gap-1">
       <span>+</span> <span>Add More Dishes</span>
@@ -26,9 +31,20 @@
 
 <main class="max-w-3xl mx-auto px-4 pt-6 space-y-6">
 
+  <!-- Multi-Order Selector Tabs (if table has multiple orders) -->
+  <div id="orders-tabs-container" class="hidden">
+    <p class="eyebrow mb-2">Orders for this table:</p>
+    <div id="orders-tabs" class="flex gap-2 overflow-x-auto pb-1"></div>
+  </div>
+
   <!-- Spice Trail Stepper Card -->
   <section class="card p-6 shadow-sm">
-    <h2 class="eyebrow text-center mb-6">Kitchen Status Pipeline</h2>
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="eyebrow">Kitchen Status Pipeline</h2>
+      <button id="refresh-status-btn" class="text-xs font-semibold hover:underline flex items-center gap-1" style="color:var(--saffron-deep)" onclick="loadInitialStatus()">
+        <span>🔄 Refresh</span>
+      </button>
+    </div>
     <div class="spice-trail mb-6">
       <div class="stage" data-status="placed">
         <div class="line"></div>
@@ -45,11 +61,13 @@
         <div class="label">Served</div>
       </div>
     </div>
-    <p class="text-center text-xs font-semibold py-2 px-4 rounded-full mx-auto w-fit" id="status-message" style="background:var(--cream-deep); color: var(--charcoal); border:1px solid var(--clay-line)">Loading your order status…</p>
+    <p class="text-center text-xs font-semibold py-2 px-4 rounded-full mx-auto w-fit transition-all" id="status-message" style="background:var(--cream-deep); color: var(--charcoal); border:1px solid var(--clay-line)">Loading your order status…</p>
   </section>
 
   <!-- Order Items Summary Card -->
-  <section id="order-details" class="card p-6 shadow-sm"></section>
+  <section id="order-details" class="card p-6 shadow-sm">
+    <p class="text-xs text-stone-500 text-center py-4">Fetching order details...</p>
+  </section>
 
   <!-- Dish Rating & Feedback Section -->
   <section id="feedback-section" class="card p-6 shadow-sm hidden">
@@ -67,12 +85,34 @@
 <script src="../js/socketClient.js"></script>
 <script>
   const params = new URLSearchParams(window.location.search);
-  const tableNumber = Number(params.get("table")) || 1;
-  const orderId = params.get("order");
+  const rawTableIdentifier = params.get("table") || "1";
+  let activeTableIdentifier = rawTableIdentifier;
+  let activeTableNumber = 1;
+  let requestedOrderId = params.get("order");
 
-  document.getElementById("table-label").textContent = `Table ${tableNumber}`;
-  document.getElementById("order-more-link").href = `menu.html?table=${tableNumber}`;
-  document.getElementById("order-more-header").href = `menu.html?table=${tableNumber}`;
+  let currentOrder = null;
+  let allTableOrders = [];
+
+  async function initOrderStatusTable() {
+    try {
+      const tableData = await api.resolveTable(rawTableIdentifier);
+      if (tableData && tableData.tableNumber) {
+        activeTableNumber = tableData.tableNumber;
+        activeTableIdentifier = tableData.tableCode || rawTableIdentifier;
+
+        document.getElementById("table-label").textContent = `Table ${activeTableNumber}`;
+        document.getElementById("order-more-link").href = `menu.html?table=${activeTableIdentifier}`;
+        document.getElementById("order-more-header").href = `menu.html?table=${activeTableIdentifier}`;
+        document.getElementById("back-to-menu-header").href = `menu.html?table=${activeTableIdentifier}`;
+      }
+    } catch (e) {
+      const fallbackNum = Number(rawTableIdentifier);
+      if (!isNaN(fallbackNum) && fallbackNum > 0) {
+        document.getElementById("table-label").textContent = `Table ${fallbackNum}`;
+      }
+    }
+    loadInitialStatus();
+  }
 
   const STAGES = ["placed", "preparing", "served"];
 
@@ -89,10 +129,46 @@
       preparing: "🔥 The kitchen is preparing your dishes right now!",
       served: "🍽️ Order served! Enjoy your meal!",
     };
-    document.getElementById("status-message").textContent = messages[status] || "";
+    document.getElementById("status-message").textContent = messages[status] || `Status: ${status}`;
 
     if (status === "served") {
       document.getElementById("feedback-section").classList.remove("hidden");
+    } else {
+      document.getElementById("feedback-section").classList.add("hidden");
+    }
+  }
+
+  function renderOrderTabs(orders, selectedOrderId) {
+    const container = document.getElementById("orders-tabs-container");
+    const tabs = document.getElementById("orders-tabs");
+    if (!orders || orders.length <= 1) {
+      container.classList.add("hidden");
+      return;
+    }
+    container.classList.remove("hidden");
+    tabs.innerHTML = orders.map((o, idx) => {
+      const isSelected = o._id === selectedOrderId;
+      const statusEmoji = o.status === "served" ? "🍽️" : o.status === "preparing" ? "🔥" : "📝";
+      const totalItems = (o.items || []).reduce((n, i) => n + i.quantity, 0);
+      return `
+        <button onclick="selectOrder('${o._id}')" class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 ${
+          isSelected ? "bg-stone-900 text-white shadow-sm" : "bg-white text-stone-700 border border-stone-200 hover:bg-stone-50"
+        }">
+          <span>${statusEmoji} Order #${orders.length - idx}</span>
+          <span class="text-[10px] opacity-80">(${totalItems} items · ₹${o.totalAmount})</span>
+        </button>
+      `;
+    }).join("");
+  }
+
+  function selectOrder(id) {
+    const found = allTableOrders.find((o) => o._id === id);
+    if (found) {
+      currentOrder = found;
+      requestedOrderId = found._id;
+      paintStatus(currentOrder.status);
+      renderOrderDetails(currentOrder);
+      renderOrderTabs(allTableOrders, currentOrder._id);
     }
   }
 
@@ -100,7 +176,10 @@
     const el = document.getElementById("order-details");
     el.innerHTML = `
       <div class="flex justify-between items-center mb-3 pb-2" style="border-bottom:1px solid var(--clay-line)">
-        <p class="eyebrow">Order Items</p>
+        <div class="flex items-center gap-2">
+          <p class="eyebrow">Order Summary</p>
+          <span class="text-[10px] text-stone-400 font-mono">#${order._id.slice(-6)}</span>
+        </div>
         <span class="text-xs font-bold px-2.5 py-1 rounded-full" style="background:var(--cream-deep); color:var(--charcoal-soft); border:1px solid var(--clay-line)">⏱ ~${order.estimatedWaitTime || 15} min wait</span>
       </div>
 
@@ -151,6 +230,7 @@
   }
 
   document.getElementById("submit-feedback-btn").onclick = async () => {
+    if (!currentOrder) return;
     const rows = document.querySelectorAll("#feedback-items [data-menu-item-id]");
     const ratings = Array.from(rows)
       .filter((r) => r.dataset.selected)
@@ -159,7 +239,7 @@
     if (ratings.length === 0) return;
 
     try {
-      await api.submitFeedback(orderId, ratings);
+      await api.submitFeedback(currentOrder._id, ratings);
       document.getElementById("feedback-thanks").classList.remove("hidden");
       document.getElementById("submit-feedback-btn").disabled = true;
     } catch (err) {
@@ -167,35 +247,70 @@
     }
   };
 
-  async function loadInitialStatus() {
+  async function loadInitialStatus(isBackground = false) {
     try {
-      const { orders } = await api.getOrdersForTable(tableNumber);
-      const order = orderId ? orders.find((o) => o._id === orderId) : orders[0];
-      if (order) {
+      const { orders, tableNumber, tableCode } = await api.getOrdersForTable(activeTableIdentifier);
+      if (tableNumber) {
+        activeTableNumber = tableNumber;
+        document.getElementById("table-label").textContent = `Table ${tableNumber}`;
+      }
+      if (tableCode) activeTableIdentifier = tableCode;
+
+      if (orders && orders.length > 0) {
+        allTableOrders = orders;
+        let order = requestedOrderId ? orders.find((o) => o._id === requestedOrderId) : null;
+        if (!order) {
+          order = orders[0]; // Fallback to latest order
+        }
+        currentOrder = order;
         paintStatus(order.status);
         renderOrderDetails(order);
+        renderOrderTabs(orders, order._id);
       } else {
-        document.getElementById("status-message").textContent = "No recent order found for this table.";
+        document.getElementById("status-message").textContent = `No active orders found for Table ${activeTableNumber}.`;
+        document.getElementById("order-details").innerHTML = `
+          <div class="text-center py-6">
+            <p class="text-3xl mb-2">🍽️</p>
+            <p class="font-semibold text-sm">No orders found for Table ${activeTableNumber}</p>
+            <p class="text-xs text-stone-500 mt-1">Browse our menu and place your first order!</p>
+            <a href="menu.html?table=${activeTableIdentifier}" class="btn-primary inline-block px-5 py-2.5 mt-4 text-xs font-semibold no-underline">Browse Menu →</a>
+          </div>
+        `;
       }
     } catch (err) {
-      document.getElementById("status-message").textContent = "Couldn't load order status.";
+      console.warn("Failed to load order status:", err);
+      if (!currentOrder && !isBackground) {
+        document.getElementById("status-message").textContent = "Couldn't load order status.";
+        document.getElementById("order-details").innerHTML = `
+          <div class="text-center py-6">
+            <p class="text-xs text-stone-500 mb-3">Unable to connect to kitchen server.</p>
+            <button onclick="loadInitialStatus()" class="btn-secondary px-4 py-2 text-xs font-semibold">🔄 Try Again</button>
+          </div>
+        `;
+      }
     }
   }
 
-  loadInitialStatus();
+  initOrderStatusTable();
 
-  const socket = connectAsCustomer(tableNumber, (order) => {
-    if (!orderId || order._id === orderId) {
+  const socket = connectAsCustomer(rawTableIdentifier, (order) => {
+    if (!requestedOrderId || order._id === requestedOrderId || (currentOrder && currentOrder._id === order._id)) {
+      currentOrder = order;
       paintStatus(order.status);
       renderOrderDetails(order);
     }
+    const idx = allTableOrders.findIndex((o) => o._id === order._id);
+    if (idx !== -1) allTableOrders[idx] = order;
+    else allTableOrders.unshift(order);
+    renderOrderTabs(allTableOrders, currentOrder ? currentOrder._id : null);
   });
 
   setInterval(() => {
     if (!socket || !socket.connected) {
-      loadInitialStatus();
+      loadInitialStatus(true);
     }
   }, 8000);
 </script>
 </body>
 </html>
+

@@ -17,18 +17,26 @@ function generateHostToken() {
 // POST /api/sessions (public) - a customer starts a group order for their table
 async function createSession(req, res) {
   try {
-    const { tableNumber, hostDeviceId, hostName } = req.body;
-    if (!tableNumber || !hostDeviceId) {
-      return res.status(400).json({ error: "tableNumber and hostDeviceId are required" });
+    const { tableNumber, tableCode, hostDeviceId, hostName } = req.body;
+    const identifier = String(tableCode || tableNumber || "").trim();
+    if (!identifier || !hostDeviceId) {
+      return res.status(400).json({ error: "table identifier and hostDeviceId are required" });
     }
 
-    const table = await Table.findOne({ tableNumber, isActive: true });
+    const isNum = !isNaN(Number(identifier));
+    const table = await Table.findOne({
+      $or: [
+        { tableCode: identifier },
+        ...(isNum ? [{ tableNumber: Number(identifier) }] : [])
+      ],
+      isActive: true,
+    });
     if (!table) {
-      return res.status(404).json({ error: "Invalid or inactive table" });
+      return res.status(404).json({ error: "Invalid or inactive table QR code." });
     }
 
     const session = await GroupSession.create({
-      tableNumber,
+      tableNumber: table.tableNumber,
       sessionCode: generateSessionCode(),
       hostToken: generateHostToken(),
       hostDeviceId,

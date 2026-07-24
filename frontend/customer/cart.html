@@ -19,8 +19,13 @@
         </a>
         <h1 class="display text-xl font-bold">Review Your Cart</h1>
       </div>
-      <span id="table-label" class="text-xs font-semibold px-2.5 py-1 rounded-full"
-        style="background:var(--cream-deep); border:1px solid var(--clay-line); color:var(--saffron-deep)">Table —</span>
+      <div class="flex items-center gap-2">
+        <a id="orders-link-cart" href="order-status.html" class="btn-secondary px-3 py-1.5 text-xs no-underline flex items-center gap-1 font-semibold">
+          <span>📜</span> <span>My Orders</span>
+        </a>
+        <span id="table-label" class="text-xs font-semibold px-2.5 py-1 rounded-full"
+          style="background:var(--cream-deep); border:1px solid var(--clay-line); color:var(--saffron-deep)">Table —</span>
+      </div>
     </div>
   </header>
 
@@ -60,9 +65,28 @@
           </div>
         </div>
 
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-between items-center mb-4">
           <span class="font-bold text-sm">Grand Total</span>
           <span id="cart-total" class="display text-2xl font-bold" style="color:var(--saffron-deep)">₹0</span>
+        </div>
+
+        <!-- Customer Details -->
+        <div class="mb-4 space-y-2" style="border-top:1px solid var(--clay-line); padding-top:14px">
+          <p class="eyebrow text-[10px] mb-2">Your Details</p>
+          <div>
+            <label class="text-[11px] font-semibold text-stone-500 block mb-1">Name <span style="color:var(--chili)">*</span></label>
+            <input id="customer-name" type="text" placeholder="e.g. Rahul Sharma" maxlength="80"
+              class="w-full text-xs px-3 py-2 rounded-lg border outline-none"
+              style="border-color:var(--clay-line); background:var(--cream-deep); color:var(--charcoal); font-family:inherit"
+            />
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-stone-500 block mb-1">Mobile <span class="text-stone-400">(optional)</span></label>
+            <input id="customer-mobile" type="tel" placeholder="e.g. 9876543210" maxlength="15"
+              class="w-full text-xs px-3 py-2 rounded-lg border outline-none"
+              style="border-color:var(--clay-line); background:var(--cream-deep); color:var(--charcoal); font-family:inherit"
+            />
+          </div>
         </div>
 
         <button id="place-order-btn" class="btn-primary w-full py-3 text-xs font-semibold shadow-md">
@@ -78,13 +102,33 @@
   <script src="../js/api.js"></script>
   <script src="../js/cart.js"></script>
   <script>
-    const tableNumber = getTableNumberFromUrl() || 1;
-    document.getElementById("table-label").textContent = `Table ${tableNumber}`;
-    document.getElementById("back-link").href = `menu.html?table=${tableNumber}`;
-    document.getElementById("empty-menu-link").href = `menu.html?table=${tableNumber}`;
+    const rawTableIdentifier = getTableIdentifierFromUrl() || "1";
+    let activeTableIdentifier = rawTableIdentifier;
+    let activeTableNumber = 1;
+
+    async function initCartTable() {
+      try {
+        const tableData = await api.resolveTable(rawTableIdentifier);
+        if (tableData && tableData.tableNumber) {
+          activeTableNumber = tableData.tableNumber;
+          activeTableIdentifier = tableData.tableCode || rawTableIdentifier;
+
+          document.getElementById("table-label").textContent = `Table ${activeTableNumber}`;
+          document.getElementById("back-link").href = `menu.html?table=${activeTableIdentifier}`;
+          document.getElementById("empty-menu-link").href = `menu.html?table=${activeTableIdentifier}`;
+          document.getElementById("orders-link-cart").href = `order-status.html?table=${activeTableIdentifier}`;
+        }
+      } catch (e) {
+        const fallbackNum = Number(rawTableIdentifier);
+        if (!isNaN(fallbackNum) && fallbackNum > 0) {
+          document.getElementById("table-label").textContent = `Table ${fallbackNum}`;
+        }
+      }
+      render();
+    }
 
     function render() {
-      const cart = getCart(tableNumber);
+      const cart = getCart(activeTableIdentifier) || getCart(rawTableIdentifier);
       const container = document.getElementById("cart-items");
       const empty = document.getElementById("empty-state");
       const contentWrapper = document.getElementById("cart-content-wrapper");
@@ -117,8 +161,8 @@
         `;
 
         const [minusBtn, plusBtn] = card.querySelectorAll("button");
-        minusBtn.onclick = () => { updateCartQuantity(tableNumber, item.menuItemId, item.quantity - 1); render(); };
-        plusBtn.onclick = () => { updateCartQuantity(tableNumber, item.menuItemId, item.quantity + 1); render(); };
+        minusBtn.onclick = () => { updateCartQuantity(activeTableIdentifier, item.menuItemId, item.quantity - 1); render(); };
+        plusBtn.onclick = () => { updateCartQuantity(activeTableIdentifier, item.menuItemId, item.quantity + 1); render(); };
         container.appendChild(card);
       });
 
@@ -127,9 +171,29 @@
       document.getElementById("cart-total").textContent = `₹${totalVal}`;
     }
 
+    // Load saved customer details from localStorage
+    const savedName = localStorage.getItem("customerName") || "";
+    const savedMobile = localStorage.getItem("customerMobile") || "";
+    document.getElementById("customer-name").value = savedName;
+    document.getElementById("customer-mobile").value = savedMobile;
+
     document.getElementById("place-order-btn").onclick = async () => {
-      const cart = getCart(tableNumber);
+      const cart = getCart(activeTableIdentifier) || getCart(rawTableIdentifier);
       if (cart.length === 0) return;
+
+      const customerName = document.getElementById("customer-name").value.trim();
+      const customerMobile = document.getElementById("customer-mobile").value.trim();
+
+      if (!customerName) {
+        document.getElementById("customer-name").focus();
+        document.getElementById("customer-name").style.borderColor = "var(--chili)";
+        document.getElementById("customer-name").placeholder = "Please enter your name";
+        return;
+      }
+
+      // Save for next visit
+      localStorage.setItem("customerName", customerName);
+      if (customerMobile) localStorage.setItem("customerMobile", customerMobile);
 
       const btn = document.getElementById("place-order-btn");
       btn.disabled = true;
@@ -137,11 +201,14 @@
 
       try {
         const { order } = await api.placeOrder(
-          tableNumber,
-          cart.map((c) => ({ menuItemId: c.menuItemId, quantity: c.quantity }))
+          activeTableIdentifier,
+          cart.map((c) => ({ menuItemId: c.menuItemId, quantity: c.quantity })),
+          customerName,
+          customerMobile
         );
-        clearCart(tableNumber);
-        window.location.href = `order-status.html?table=${tableNumber}&order=${order._id}`;
+        clearCart(activeTableIdentifier);
+        clearCart(rawTableIdentifier);
+        window.location.href = `order-status.html?table=${activeTableIdentifier}&order=${order._id}`;
       } catch (err) {
         alert(err.message || "Couldn't place your order. Please try again.");
         btn.disabled = false;
@@ -149,7 +216,12 @@
       }
     };
 
-    render();
+    // Reset name field border on input
+    document.getElementById("customer-name").addEventListener("input", () => {
+      document.getElementById("customer-name").style.borderColor = "";
+    });
+
+    initCartTable();
   </script>
 </body>
 </html>

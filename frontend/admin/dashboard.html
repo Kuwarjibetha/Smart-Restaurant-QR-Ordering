@@ -16,12 +16,10 @@
 <header class="sticky top-0 z-30 shadow-sm" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
   <div class="max-w-7xl mx-auto px-5 py-3.5 flex items-center justify-between">
     <div class="flex items-center gap-4">
-      <a href="../index.html" class="btn-secondary px-3 py-1.5 text-xs no-underline font-semibold flex items-center gap-1">
-        <span>← Home</span>
-      </a>
+      
       <div>
         <p class="eyebrow">Kitchen Operations</p>
-        <h1 class="display text-xl font-bold">Live Kanban Board</h1>
+        <h1 class="display text-xl font-bold">Live Moniter</h1>
       </div>
     </div>
 
@@ -30,7 +28,11 @@
       <a href="menu-manage.html" class="no-underline text-stone-700 hover:text-stone-900">Menu Items</a>
       <a href="tables.html" class="no-underline text-stone-700 hover:text-stone-900">Table QRs</a>
       <a href="analytics.html" id="analytics-link" class="no-underline text-stone-700 hover:text-stone-900">Analytics</a>
+      <a href="../index.html" class="btn-secondary px-3 py-1.5 text-xs no-underline font-semibold flex items-center gap-1">
+        <span> Home</span>
+      </a>
       <button id="logout-btn" class="btn-secondary px-3 py-1.5 text-xs">Log out</button>
+      
     </nav>
   </div>
 </header>
@@ -146,11 +148,15 @@
 
     card.innerHTML = `
       <div class="flex justify-between items-center mb-2 pb-2" style="border-bottom:1px solid var(--clay-line)">
-        <span class="font-bold text-sm">Table ${order.tableNumber}</span>
+        <div>
+          <span class="font-bold text-sm">Table ${order.tableNumber}</span>
+          ${order.customerName ? `<span class="text-xs ml-2 font-semibold" style="color:var(--cardamom)">👤 ${order.customerName}</span>` : ""}
+        </div>
         <span class="text-[11px] font-semibold px-2 py-0.5 rounded" style="background:var(--cream-deep); color: var(--charcoal-soft)">
           ⏱ ${timeAgo}
         </span>
       </div>
+      ${order.customerMobile ? `<div class="text-[11px] mb-2 font-medium" style="color:var(--charcoal-soft)">📞 ${order.customerMobile}</div>` : ""}
       <div class="text-xs mb-3 space-y-1" style="color: var(--charcoal)">
         ${order.items.map((i) => `<div class="flex justify-between"><span>${i.quantity} × ${i.name}</span><span class="font-semibold text-stone-500">₹${i.price * i.quantity}</span></div>`).join("")}
       </div>

@@ -1,11 +1,7 @@
 // api.js — thin wrapper around fetch for talking to the backend.
 // Change API_BASE if your backend runs somewhere other than localhost:5000.
 
-const API_BASE = window.API_BASE || (
-  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:5000/api"
-    : `${window.location.origin}/api`
-);
+const API_BASE = "http://localhost:5000/api";
 
 async function apiRequest(path, { method = "GET", body, auth = false } = {}) {
   const headers = { "Content-Type": "application/json" };
@@ -36,8 +32,9 @@ const api = {
   deleteMenuItem: (id) => apiRequest(`/menu/${id}`, { method: "DELETE", auth: true }),
 
   // Orders
-  placeOrder: (tableNumber, items) => apiRequest("/orders", { method: "POST", body: { tableNumber, items } }),
-  getOrdersForTable: (tableNumber) => apiRequest(`/orders/table/${tableNumber}`),
+  placeOrder: (tableIdentifier, items, customerName, customerMobile) =>
+    apiRequest("/orders", { method: "POST", body: { tableCode: tableIdentifier, tableNumber: tableIdentifier, items, customerName, customerMobile } }),
+  getOrdersForTable: (tableIdentifier) => apiRequest(`/orders/table/${tableIdentifier}`),
   getAllOrders: (status) => apiRequest(`/orders${status ? `?status=${status}` : ""}`, { auth: true }),
   updateOrderStatus: (id, status) => apiRequest(`/orders/${id}`, { method: "PATCH", body: { status }, auth: true }),
 
@@ -48,8 +45,8 @@ const api = {
   askMenu: (question) => apiRequest("/menu/ask", { method: "POST", body: { question } }),
 
   // Group ordering
-  createGroupSession: (tableNumber, hostDeviceId, hostName) =>
-    apiRequest("/sessions", { method: "POST", body: { tableNumber, hostDeviceId, hostName } }),
+  createGroupSession: (tableIdentifier, hostDeviceId, hostName) =>
+    apiRequest("/sessions", { method: "POST", body: { tableCode: tableIdentifier, tableNumber: tableIdentifier, hostDeviceId, hostName } }),
   getGroupSession: (code) => apiRequest(`/sessions/${code}`),
   addSessionItem: (code, menuItemId, quantity, deviceId, name) =>
     apiRequest(`/sessions/${code}/items`, { method: "POST", body: { menuItemId, quantity, deviceId, name } }),
@@ -63,12 +60,13 @@ const api = {
     apiRequest("/plan-meal", { method: "POST", body: { peopleCount, budget, mealType, dietPreference } }),
 
   // Waiter calls
-  createWaiterCall: (tableNumber, requestType) =>
-    apiRequest("/waiter-call", { method: "POST", body: { tableNumber, requestType } }),
+  createWaiterCall: (tableIdentifier, requestType) =>
+    apiRequest("/waiter-call", { method: "POST", body: { tableCode: tableIdentifier, tableNumber: tableIdentifier, requestType } }),
   getActiveWaiterCalls: () => apiRequest("/waiter-call", { auth: true }),
   resolveWaiterCall: (id) => apiRequest(`/waiter-call/${id}`, { method: "PATCH", auth: true }),
 
   // Tables
+  resolveTable: (identifier) => apiRequest(`/tables/resolve/${identifier}`),
   getTables: () => apiRequest("/tables", { auth: true }),
   createTable: (tableNumber) => apiRequest("/tables", { method: "POST", body: { tableNumber }, auth: true }),
 

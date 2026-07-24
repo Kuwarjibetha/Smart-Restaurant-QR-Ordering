@@ -7,6 +7,12 @@ const tableSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    tableCode: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
     qrCodeUrl: {
       type: String, 
       required: true,

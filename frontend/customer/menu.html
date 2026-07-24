@@ -20,6 +20,10 @@
     </div>
 
     <div class="flex items-center gap-2">
+      <a href="order-status.html" id="orders-link" class="card px-3 py-1.5 flex items-center gap-1.5 relative no-underline hover:bg-stone-50" style="color:var(--charcoal);">
+        <span class="text-xs font-semibold flex items-center gap-1">📜 <span>My Orders</span></span>
+        <span id="active-orders-badge" class="hidden text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-600 text-white">0</span>
+      </a>
       <a href="cart.html" id="cart-link" class="card px-3.5 py-1.5 flex items-center gap-2 relative no-underline hover:bg-stone-50" style="color:var(--charcoal);">
         <span class="text-base">🧺 Cart</span>
         <span id="cart-count" class="text-xs font-bold px-1.5 py-0.5 rounded-full" style="background:var(--chili); color:var(--white)">0</span>
@@ -160,6 +164,17 @@
   </a>
 </div>
 
+<!-- Floating Active Order Shortcut Bar -->
+<div id="floating-order-bar" class="fixed bottom-4 left-4 z-40 hidden">
+  <a id="float-order-link" href="order-status.html" class="flex items-center gap-2.5 px-4 py-2.5 rounded-full shadow-lg border no-underline text-xs font-semibold text-stone-900 transition-all hover:scale-105" style="background:var(--white); border-color:var(--saffron);">
+    <span class="relative flex h-2.5 w-2.5">
+      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+    </span>
+    <span>🔥 View Live Order Status →</span>
+  </a>
+</div>
+
 <script src="../js/api.js"></script>
 <script src="../js/cart.js"></script>
 <script src="../js/recommend.js"></script>
@@ -172,25 +187,82 @@
   let allMenuItems = [];
   let currentCategory = "all";
 
-  const tableNumber = getTableNumberFromUrl() || 1;
-  document.getElementById("table-label").textContent = `Table ${tableNumber}`;
-  document.getElementById("cart-link").href = `cart.html?table=${tableNumber}`;
-  document.getElementById("float-checkout-btn").href = `cart.html?table=${tableNumber}`;
+  const rawTableIdentifier = getTableIdentifierFromUrl() || "1";
+  let activeTableIdentifier = rawTableIdentifier;
+  let activeTableNumber = 1;
+
+  async function checkActiveOrders() {
+    try {
+      const { orders } = await api.getOrdersForTable(activeTableIdentifier);
+      if (orders && orders.length > 0) {
+        const badge = document.getElementById("active-orders-badge");
+        const floatOrderBar = document.getElementById("floating-order-bar");
+        if (badge) {
+          badge.textContent = orders.length;
+          badge.classList.remove("hidden");
+        }
+        const activeOrders = orders.filter(o => o.status !== "served");
+        if (floatOrderBar && activeOrders.length > 0) {
+          floatOrderBar.classList.remove("hidden");
+        }
+      }
+    } catch (e) {
+      // quiet fallback
+    }
+  }
+
+  async function initializeTable() {
+    try {
+      const tableData = await api.resolveTable(rawTableIdentifier);
+      if (tableData && tableData.tableNumber) {
+        activeTableNumber = tableData.tableNumber;
+        activeTableIdentifier = tableData.tableCode || rawTableIdentifier;
+
+        document.getElementById("table-label").textContent = `Table ${activeTableNumber}`;
+        document.getElementById("cart-link").href = `cart.html?table=${activeTableIdentifier}`;
+        document.getElementById("float-checkout-btn").href = `cart.html?table=${activeTableIdentifier}`;
+        document.getElementById("orders-link").href = `order-status.html?table=${activeTableIdentifier}`;
+        if (document.getElementById("float-order-link")) {
+          document.getElementById("float-order-link").href = `order-status.html?table=${activeTableIdentifier}`;
+        }
+
+        if (window.history && window.history.replaceState && rawTableIdentifier !== activeTableIdentifier) {
+          const url = new URL(window.location.href);
+          url.searchParams.set("table", activeTableIdentifier);
+          window.history.replaceState({}, "", url);
+        }
+
+        refreshCartBadge();
+        checkActiveOrders();
+      }
+    } catch (err) {
+      console.warn("Table resolution notice:", err);
+      const fallbackNum = Number(rawTableIdentifier);
+      if (!isNaN(fallbackNum) && fallbackNum > 0) {
+        document.getElementById("table-label").textContent = `Table ${fallbackNum}`;
+      }
+    }
+  }
 
   function refreshCartBadge() {
-    const cart = getCart(tableNumber);
+    const cart = getCart(activeTableIdentifier) || getCart(rawTableIdentifier);
     const count = cart.reduce((n, i) => n + i.quantity, 0);
     const total = cartTotal(cart);
     
-    document.getElementById("cart-count").textContent = count;
-    document.getElementById("float-cart-count").textContent = count;
-    document.getElementById("float-cart-total").textContent = `₹${total}`;
+    const cartCountEl = document.getElementById("cart-count");
+    const floatCartCountEl = document.getElementById("float-cart-count");
+    const floatCartTotalEl = document.getElementById("float-cart-total");
+    if (cartCountEl) cartCountEl.textContent = count;
+    if (floatCartCountEl) floatCartCountEl.textContent = count;
+    if (floatCartTotalEl) floatCartTotalEl.textContent = `₹${total}`;
 
     const floatBar = document.getElementById("floating-cart-bar");
-    if (count > 0) {
-      floatBar.classList.remove("hidden");
-    } else {
-      floatBar.classList.add("hidden");
+    if (floatBar) {
+      if (count > 0) {
+        floatBar.classList.remove("hidden");
+      } else {
+        floatBar.classList.add("hidden");
+      }
     }
   }
 
@@ -278,7 +350,7 @@
             try {
               const handledByGroup = await groupOrderAddItem(item);
               if (!handledByGroup) {
-                addToCart(tableNumber, item, 1);
+                addToCart(activeTableIdentifier, item, 1);
                 refreshCartBadge();
               }
               addBtn.textContent = "Added ✓";
@@ -349,7 +421,7 @@
 
   // Call Waiter Socket & API setup
   const waiterStatusEl = document.getElementById("waiter-call-status");
-  connectAsCustomer(tableNumber, () => {}, () => {
+  connectAsCustomer(rawTableIdentifier, () => {}, () => {
     waiterStatusEl.textContent = "Your request has been handled. Thank you!";
   });
 
@@ -358,7 +430,7 @@
       const requestType = btn.getAttribute("data-type");
       waiterStatusEl.textContent = "Calling waiter…";
       try {
-        await api.createWaiterCall(tableNumber, requestType);
+        await api.createWaiterCall(activeTableIdentifier, requestType);
         waiterStatusEl.textContent = "A waiter has been notified. Thanks for your patience!";
       } catch (err) {
         waiterStatusEl.textContent = err.message || "Couldn't reach a waiter — please try again.";
@@ -366,25 +438,46 @@
     };
   });
 
-  refreshCartBadge();
   loadMenu();
+  refreshCartBadge();
+  initializeTable();
 
-  // Group Order Container Handler
+  // Group Order: sync sidebar display and delegate clicks to the real banner button
   const groupBannerEl = document.getElementById("group-order-banner");
   const sidebarGroupContainer = document.getElementById("sidebar-group-container");
 
-  const syncObserver = new MutationObserver(() => {
-    if (sidebarGroupContainer && groupBannerEl) {
-      sidebarGroupContainer.innerHTML = groupBannerEl.innerHTML;
+  function syncSidebarGroupBanner() {
+    if (!sidebarGroupContainer || !groupBannerEl) return;
+    // Copy content but change IDs to avoid duplicates
+    const clone = groupBannerEl.cloneNode(true);
+    // Remove any ids from the clone to avoid duplicate-ID issues
+    clone.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+    // Give the clone's button a sidebar-specific class
+    const cloneBtn = clone.querySelector("button");
+    if (cloneBtn) {
+      cloneBtn.classList.add("sidebar-group-btn");
     }
-  });
-  syncObserver.observe(groupBannerEl, { childList: true, subtree: true });
+    sidebarGroupContainer.innerHTML = clone.innerHTML;
+    // Re-attach: sidebar button delegates click to the real banner button
+    const sidebarBtn = sidebarGroupContainer.querySelector(".sidebar-group-btn, button");
+    if (sidebarBtn) {
+      sidebarBtn.onclick = () => {
+        const realBtn = groupBannerEl.querySelector("button");
+        if (realBtn) realBtn.click();
+      };
+    }
+  }
 
-  initGroupOrder(tableNumber, groupBannerEl).then((isGroupMode) => {
+  const syncObserver = new MutationObserver(syncSidebarGroupBanner);
+  syncObserver.observe(groupBannerEl, { childList: true, subtree: true });
+  syncSidebarGroupBanner(); // run once on load
+
+  initGroupOrder(rawTableIdentifier, groupBannerEl).then((isGroupMode) => {
     if (isGroupMode) {
       document.getElementById("cart-link").style.display = "none";
       document.getElementById("floating-cart-bar").style.display = "none";
     }
+    syncSidebarGroupBanner();
   });
 </script>
 </body>

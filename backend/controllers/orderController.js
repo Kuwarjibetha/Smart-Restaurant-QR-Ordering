@@ -10,15 +10,24 @@ const { emitNewOrder, emitOrderStatusUpdate } = require("../socket/socketHandler
 // Sab kuch server side pe DB se verify karke calculate hota hai.
 async function createOrder(req, res) {
   try {
-    const { tableNumber, items } = req.body;
+    const { tableNumber, tableCode, items, customerName, customerMobile } = req.body;
+    const identifier = String(tableCode || tableNumber || "").trim();
 
-    if (!tableNumber || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: "tableNumber and a non-empty items array are required" });
+    if (!identifier || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: "table identifier and a non-empty items array are required" });
     }
 
-    const table = await Table.findOne({ tableNumber, isActive: true });
+    const isNum = !isNaN(Number(identifier));
+    const table = await Table.findOne({
+      $or: [
+        { tableCode: identifier },
+        ...(isNum ? [{ tableNumber: Number(identifier) }] : [])
+      ],
+      isActive: true,
+    });
+
     if (!table) {
-      return res.status(404).json({ error: "Invalid or inactive table" });
+      return res.status(404).json({ error: "Invalid or inactive table QR code." });
     }
 
     // Saare requested menu items ek hi query se fetch kari
@@ -39,7 +48,7 @@ async function createOrder(req, res) {
       }
 
       const quantity = Math.max(1, parseInt(requested.quantity, 10) || 1);
-      const linePrice = menuItem.price; // server-authoritative price, client se nahi lega
+      const linePrice = menuItem.price; // server-authoritative price
       totalAmount += linePrice * quantity;
 
       orderItems.push({
@@ -58,7 +67,10 @@ async function createOrder(req, res) {
     );
 
     const order = await Order.create({
-      tableNumber,
+      tableNumber: table.tableNumber,
+      tableCode: table.tableCode,
+      customerName: (customerName || "").trim().slice(0, 80),
+      customerMobile: (customerMobile || "").trim().slice(0, 20),
       items: orderItems,
       status: "placed",
       totalAmount,
@@ -66,7 +78,7 @@ async function createOrder(req, res) {
     });
 
     const io = req.app.get("io");
-    if (io) emitNewOrder(io, order); // kitchen dashboard pe new order bhejo
+    if (io) emitNewOrder(io, order);
 
     res.status(201).json({ order });
   } catch (err) {
@@ -74,7 +86,7 @@ async function createOrder(req, res) {
   }
 }
 
-// PATCH /api/orders/:id (admin)  order ki current status update karo
+// PATCH /api/orders/:id (admin)
 async function updateOrderStatus(req, res) {
   try {
     const { status } = req.body;
@@ -92,7 +104,7 @@ async function updateOrderStatus(req, res) {
     if (!order) return res.status(404).json({ error: "Order not found" });
 
     const io = req.app.get("io");
-    if (io) emitOrderStatusUpdate(io, order.tableNumber, order); // table and kitchen ko update bhejo
+    if (io) emitOrderStatusUpdate(io, order.tableNumber, order);
 
     res.json({ order });
   } catch (err) {
@@ -100,14 +112,32 @@ async function updateOrderStatus(req, res) {
   }
 }
 
-// GET /api/orders/table/:tableNumber (public) - live status for a table
+// GET /api/orders/table/:tableIdentifier (public) — live status for a table Code or Number
 async function getOrdersForTable(req, res) {
   try {
-    const tableNumber = Number(req.params.tableNumber);
-    const orders = await Order.find({ tableNumber })
+    const identifier = String(req.params.tableNumber).trim();
+    const isNum = !isNaN(Number(identifier));
+
+    const table = await Table.findOne({
+      $or: [
+        { tableCode: identifier },
+        ...(isNum ? [{ tableNumber: Number(identifier) }] : [])
+      ]
+    });
+
+    if (!table) {
+      return res.status(404).json({ error: "Invalid table QR code", orders: [] });
+    }
+
+    const orders = await Order.find({
+      $or: [
+        { tableCode: table.tableCode },
+        { tableNumber: table.tableNumber }
+      ]
+    })
       .sort({ createdAt: -1 })
       .limit(20);
-    res.json({ orders });
+    res.json({ orders, tableNumber: table.tableNumber, tableCode: table.tableCode });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch orders", details: err.message });
   }
@@ -119,7 +149,10 @@ async function getAllOrders(req, res) {
     const filter = {};
     if (req.query.status) filter.status = req.query.status;
 
-    const orders = await Order.find(filter).sort({ createdAt: -1 }).limit(100);
+    const orders = await Order.find(filter)
+      .select("tableNumber tableCode customerName customerMobile items status totalAmount estimatedWaitTime createdAt updatedAt")
+      .sort({ createdAt: -1 })
+      .limit(100);
     res.json({ orders });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch orders", details: err.message });

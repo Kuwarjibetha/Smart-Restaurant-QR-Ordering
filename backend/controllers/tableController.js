@@ -1,8 +1,7 @@
 const Table = require("../models/Table");
-const { generateTableQR } = require("../utils/generateQR");
+const { generateTableQR, generateTableCode } = require("../utils/generateQR");
 
-// POST /api/tables (admin)  naya table banaye aur uska QR code generate kare
-// Simple: admin table number bhejega, backend check karega aur QR link banake table save karega
+// POST /api/tables (admin) — creates a table with an unguessable tableCode and QR code
 async function createTable(req, res) {
   try {
     const { tableNumber } = req.body;
@@ -10,33 +9,80 @@ async function createTable(req, res) {
       return res.status(400).json({ error: "tableNumber is required" });
     }
 
-    const existing = await Table.findOne({ tableNumber });
+    const existing = await Table.findOne({ tableNumber: Number(tableNumber) });
     if (existing) {
       return res.status(409).json({ error: "Table already exists" });
     }
 
-    const { qrCodeUrl, tableUrl } = await generateTableQR(tableNumber);
-
-    const table = await Table.create({ tableNumber, qrCodeUrl, tableUrl });
+    const { tableCode, qrCodeUrl, tableUrl } = await generateTableQR(tableNumber);
+    const table = await Table.create({ tableNumber: Number(tableNumber), tableCode, qrCodeUrl, tableUrl });
     res.status(201).json({ table });
   } catch (err) {
     res.status(500).json({ error: "Failed to create table", details: err.message });
   }
 }
 
-// GET /api/tables (admin )  saare tables ka list le aao
-// Yeh route admin ke liye hai, table data retrieve karega aur tableNumber ke hisaab se sort karega
+// GET /api/tables (admin) — fetch all tables with tableCode and QR urls
 async function getTables(req, res) {
   try {
-    const tables = await Table.find().sort({ tableNumber: 1 });
+    let tables = await Table.find().sort({ tableNumber: 1 });
+    
+    // Ensure any legacy tables have tableCode and updated tableUrl/qrCodeUrl
+    for (let t of tables) {
+      if (!t.tableCode) {
+        const { tableCode, qrCodeUrl, tableUrl } = await generateTableQR(t.tableNumber);
+        t.tableCode = tableCode;
+        t.qrCodeUrl = qrCodeUrl;
+        t.tableUrl = tableUrl;
+        await t.save();
+      }
+    }
+
     res.json({ tables });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch tables", details: err.message });
   }
 }
 
-// PATCH /api/tables/:id (admin)  table ko deactivate ya reactivate kare
-// Admin request bhejega jisme isActive true/false hoga, backend usi table ki state update karega
+// GET /api/tables/resolve/:identifier (public) — validates tableCode or tableNumber
+async function resolveTable(req, res) {
+  try {
+    const identifier = String(req.params.identifier).trim();
+    const isNum = !isNaN(Number(identifier));
+    
+    let table = await Table.findOne({
+      $or: [
+        { tableCode: identifier },
+        ...(isNum ? [{ tableNumber: Number(identifier) }] : [])
+      ],
+      isActive: true,
+    });
+
+    if (!table) {
+      return res.status(404).json({ error: "Invalid or inactive table QR code." });
+    }
+
+    // Auto-generate code if legacy table record missing tableCode
+    if (!table.tableCode) {
+      const { tableCode, qrCodeUrl, tableUrl } = await generateTableQR(table.tableNumber);
+      table.tableCode = tableCode;
+      table.qrCodeUrl = qrCodeUrl;
+      table.tableUrl = tableUrl;
+      await table.save();
+    }
+
+    res.json({
+      tableNumber: table.tableNumber,
+      tableCode: table.tableCode,
+      isActive: table.isActive,
+      tableUrl: table.tableUrl,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to resolve table", details: err.message });
+  }
+}
+
+// PATCH /api/tables/:id (admin)
 async function updateTable(req, res) {
   try {
     const { isActive } = req.body;
@@ -52,5 +98,4 @@ async function updateTable(req, res) {
   }
 }
 
-// Export functions so routes can use them
-module.exports = { createTable, getTables, updateTable };
+module.exports = { createTable, getTables, resolveTable, updateTable };

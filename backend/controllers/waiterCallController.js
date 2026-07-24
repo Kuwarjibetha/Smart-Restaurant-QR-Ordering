@@ -1,19 +1,34 @@
 const WaiterCall = require("../models/WaiterCall");
+const Table = require("../models/Table");
 const { emitNewWaiterCall, emitWaiterCallResolved } = require("../socket/socketHandler");
 
-// POST /api/waiter-call — public, called by the customer's "Call Waiter" button
+// POST /api/waiter-call — public, called by customer
 exports.createWaiterCall = async (req, res) => {
   try {
-    const { tableNumber, requestType } = req.body;
+    const { tableNumber, tableCode, requestType } = req.body;
+    const identifier = String(tableCode || tableNumber || "").trim();
 
-    if (!tableNumber || !requestType) {
-      return res.status(400).json({ error: "tableNumber and requestType are required" });
+    if (!identifier || !requestType) {
+      return res.status(400).json({ error: "table identifier and requestType are required" });
     }
     if (!["water", "check", "help"].includes(requestType)) {
       return res.status(400).json({ error: "Invalid requestType" });
     }
 
-    const call = await WaiterCall.create({ tableNumber, requestType });
+    const isNum = !isNaN(Number(identifier));
+    const table = await Table.findOne({
+      $or: [
+        { tableCode: identifier },
+        ...(isNum ? [{ tableNumber: Number(identifier) }] : [])
+      ],
+      isActive: true,
+    });
+
+    if (!table) {
+      return res.status(404).json({ error: "Invalid or inactive table QR code." });
+    }
+
+    const call = await WaiterCall.create({ tableNumber: table.tableNumber, requestType });
 
     const io = req.app.get("io");
     emitNewWaiterCall(io, call);

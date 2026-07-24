@@ -1,7 +1,11 @@
+function getTableIdentifierFromUrl() {
+  const match = window.location.pathname.match(/table\/([a-zA-Z0-9_-]+)/) ||
+                window.location.search.match(/[?&]table=([a-zA-Z0-9_-]+)/);
+  return match ? match[1] : null;
+}
+
 function getTableNumberFromUrl() {
-  const match = window.location.pathname.match(/table\/(\d+)/) ||
-                window.location.search.match(/[?&]table=(\d+)/);
-  return match ? Number(match[1]) : null;
+  return getTableIdentifierFromUrl();
 }
 
 function cartKey(tableNumber) {

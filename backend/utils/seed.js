@@ -37,11 +37,18 @@ async function seed() {
 
   // Tables 1-5
   for (let i = 1; i <= 5; i++) {
-    const exists = await Table.findOne({ tableNumber: i });
+    let exists = await Table.findOne({ tableNumber: i });
     if (!exists) {
-      const { qrCodeUrl, tableUrl } = await generateTableQR(i);
-      await Table.create({ tableNumber: i, qrCodeUrl, tableUrl });
-      console.log(`Created table ${i}`);
+      const { tableCode, qrCodeUrl, tableUrl } = await generateTableQR(i);
+      await Table.create({ tableNumber: i, tableCode, qrCodeUrl, tableUrl });
+      console.log(`Created table ${i} (code: ${tableCode})`);
+    } else if (!exists.tableCode) {
+      const { tableCode, qrCodeUrl, tableUrl } = await generateTableQR(i);
+      exists.tableCode = tableCode;
+      exists.qrCodeUrl = qrCodeUrl;
+      exists.tableUrl = tableUrl;
+      await exists.save();
+      console.log(`Updated legacy table ${i} with code: ${tableCode}`);
     }
   }
 

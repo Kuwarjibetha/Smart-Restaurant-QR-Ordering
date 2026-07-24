@@ -21,6 +21,20 @@ const orderSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    tableCode: {
+      type: String,
+      index: true,
+    },
+    customerName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    customerMobile: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     items: {
       type: [orderItemSchema],
       required: true,
