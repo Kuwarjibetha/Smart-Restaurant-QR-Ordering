@@ -31,7 +31,7 @@
 
   <main class="max-w-4xl mx-auto px-4 pt-6">
 
-    <!-- Empty Cart State -->
+    
     <div id="empty-state" class="card p-10 text-center max-w-md mx-auto my-8 hidden shadow-sm">
       <p class="text-4xl mb-3">🧺</p>
       <h2 class="display text-xl mb-1">Your cart is empty</h2>
@@ -102,9 +102,33 @@
   <script src="../js/api.js"></script>
   <script src="../js/cart.js"></script>
   <script>
-    const rawTableIdentifier = getTableIdentifierFromUrl() || "1";
+    const rawTableIdentifier = getTableIdentifierFromUrl();
+    const hasTable = !!rawTableIdentifier;
     let activeTableIdentifier = rawTableIdentifier;
-    let activeTableNumber = 1;
+    let activeTableNumber = null;
+
+    if (!hasTable) {
+      document.querySelector("main").innerHTML = `
+        <div style="
+          max-width:420px; margin:60px auto; text-align:center;
+          padding:40px 24px; background:var(--white);
+          border:2px solid #F59E0B; border-radius:20px; box-shadow:0 8px 32px rgba(43,36,32,0.10);
+        ">
+          <div style="font-size:3rem; margin-bottom:16px">📱</div>
+          <h2 style="font-family:var(--font-display); font-size:1.3rem; color:var(--charcoal); margin-bottom:10px">
+            Scan your table QR code
+          </h2>
+          <p style="font-size:0.8rem; color:var(--charcoal-soft); line-height:1.6; margin-bottom:24px">
+            To view your cart and place an order, please scan the
+            <strong>QR code on your table</strong>. The cart is linked to a specific table.
+          </p>
+          <a href="menu.html" class="btn-secondary" style="display:inline-block; padding:10px 24px; text-decoration:none; font-size:0.8rem">
+            ← Back to Menu
+          </a>
+        </div>
+      `;
+
+    } else {
 
     async function initCartTable() {
       try {
@@ -171,13 +195,13 @@
       document.getElementById("cart-total").textContent = `₹${totalVal}`;
     }
 
-    // Load saved customer details from localStorage
     const savedName = localStorage.getItem("customerName") || "";
     const savedMobile = localStorage.getItem("customerMobile") || "";
     document.getElementById("customer-name").value = savedName;
     document.getElementById("customer-mobile").value = savedMobile;
 
     document.getElementById("place-order-btn").onclick = async () => {
+      if (!hasTable) return;
       const cart = getCart(activeTableIdentifier) || getCart(rawTableIdentifier);
       if (cart.length === 0) return;
 
@@ -191,7 +215,6 @@
         return;
       }
 
-      // Save for next visit
       localStorage.setItem("customerName", customerName);
       if (customerMobile) localStorage.setItem("customerMobile", customerMobile);
 
@@ -216,12 +239,12 @@
       }
     };
 
-    // Reset name field border on input
     document.getElementById("customer-name").addEventListener("input", () => {
       document.getElementById("customer-name").style.borderColor = "";
     });
 
     initCartTable();
+    }
   </script>
 </body>
 </html>

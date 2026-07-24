@@ -1,354 +1,193 @@
-# Smart Restaurant QR Ordering System
+# Spice Trail — Smart Restaurant QR Ordering System
 
-A complete full-stack QR ordering system with customer menu pages, admin dashboards, live Socket.io updates, AI-powered recommendations, and customer feedback.
+A complete full-stack restaurant ordering system. Customers scan a table QR code, browse a live menu, place orders, call waiters, and track food in real-time. Restaurant staff manage orders, menu items, tables, and view analytics from an admin panel.
 
-## Project overview
+---
 
-This repository contains two main parts:
+## What's in this repo
 
-- `backend/` — Node.js + Express + MongoDB + Socket.io API server
-- `frontend/` — static customer/admin UI built with HTML, CSS, and JavaScript
+```
+qr book/
+├── AGENTS.md          ← tech stack, architecture, working principles
+├── GUIDELINES.md      ← folder names, conventions, contribution rules
+├── backend/           ← Node.js + Express + MongoDB + Socket.io API server
+└── frontend/          ← static HTML/CSS/JS customer and admin UI
+```
 
-The system works like this:
+---
 
-- Customers scan a table QR code and open the menu page for their table.
-- They browse the menu, add items to cart, and place an order.
-- The backend validates the order, recalculates totals, and saves it.
-- Kitchen staff see new orders instantly and update statuses.
-- Customers receive live order status updates via Socket.io.
-- Admin users manage menu items, tables, and view analytics.
-- AI features power dish recommendation and dietary/allergy questions.
+## How the system works
+
+1. Restaurant admin creates tables → each table gets a unique QR code
+2. Customer scans QR → `menu.html?table=<code>` opens on their phone
+3. Customer browses, uses AI features, adds to cart, places order
+4. Backend validates order, saves it, emits `newOrder` to kitchen via Socket.io
+5. Kitchen dashboard shows new order card → staff updates status
+6. Customer sees live status update (`placed → preparing → served`)
+7. After serving, customer rates dishes — feedback updates menu analytics
+
+---
 
 ## Features
 
-### Customer features
+### Customer
+- Browse menu with category filters, search, and veg-only toggle
+- Add items to a per-table cart
+- Place order — price validated server-side (client prices ignored)
+- Live order status tracking via Socket.io
+- Group order — shared cart where everyone adds from their own phone
+- Call waiter (water / check / help) with instant kitchen notification
+- AI Meal Planner — budget + group size dish suggestions via Gemini
+- AI Dietary Q&A — allergy / dietary questions answered by Gemini
+- Dish recommendation from free-text preference
+- Star rating feedback after order is served
 
-- Menu browsing with category and availability filtering
-- Add items to cart scoped per table
-- Place orders with server-side pricing and validation
-- Live order tracking via Socket.io
-- Dietary / allergy Q&A backed by Gemini AI
-- Dish recommendation powered by Gemini AI
-- Feedback submission after order completion
+### Admin
+- JWT-authenticated admin login (owner / kitchen roles)
+- Live kitchen kanban — new orders, status management
+- Menu management — create, edit, delete, toggle availability
+- Table management — generate QR codes, activate/deactivate
+- Owner-only analytics — revenue, top dishes, rating averages
 
-### Admin features
-
-- Admin login with JWT authentication
-- Kitchen dashboard with live new order feed
-- Order status management (placed/preparing/served)
-- Menu item creation, editing, and deletion
-- Table creation with QR code generation
-- Activate/deactivate tables
-- Owner-only sales analytics and dish ratings
-- Role-based access for `owner` and `kitchen`
-
-### Backend features
-
-- REST API for menu, orders, tables, auth, feedback, analytics
-- Socket.io live updates for customer and kitchen clients
-- QR code generation per table
-- Gemini AI integration for recommendations and dietary answers
-- Rate limiting for Gemini-powered endpoints
-- Password hashing with bcrypt
-- JWT auth and role-based route protection
-- MongoDB data storage with Mongoose models
-
-### Infrastructure features
-
-- Simple local development with `npm run dev`
-- Seed script for demo data
-- Environment-based configuration via `.env`
-- Static frontend serving with Python or any HTTP server
+---
 
 ## Tech stack
 
-### Backend
+**Backend**: Node.js · Express · MongoDB (Mongoose) · Socket.io · JWT · bcrypt · Gemini AI · qrcode
 
-- Node.js (>=18)
-- Express
-- MongoDB with Mongoose
-- Socket.io
-- JSON Web Tokens (JWT)
-- bcrypt
-- dotenv
-- express-rate-limit
-- qrcode
-- axios
+**Frontend**: HTML · Vanilla CSS · Tailwind CSS (CDN) · Plain JavaScript · Socket.io client
 
-### Frontend
-
-- Plain HTML/CSS/JS
-- Tailwind CSS via CDN (optional styling)
-- localStorage cart management
-- Socket.io client
+---
 
 ## Prerequisites
 
-- Node.js v18 or newer
-- MongoDB instance (Atlas, local, or Docker)
-- Gemini API key for recommendations and dietary answers
-- Python 3 or another static file server for frontend
+- Node.js ≥ 18
+- MongoDB (Atlas, local, or Docker)
+- Google Gemini API key (for AI features)
+- Python 3 (to serve frontend locally)
 
-## Backend setup
+---
+
+## Quick start
+
+### 1. Backend
 
 ```bash
 cd backend
 npm install
 cp .env.example .env
+# edit .env and fill in MONGO_URI, JWT_SECRET, GEMINI_API_KEY, FRONTEND_URL
+npm run seed    # creates demo admin accounts, 5 tables, sample menu items
+npm run dev     # starts backend on http://localhost:5000
 ```
 
-Edit `.env` and set:
-
-- `MONGO_URI` — MongoDB connection string
-- `JWT_SECRET` — secure random string
-- `GEMINI_API_KEY` — Gemini API key (optional for AI features)
-- `FRONTEND_URL` — frontend origin, e.g. `http://localhost:3000`
-- `PORT` — optional, default is `5000`
-- `DEFAULT_PREP_TIME_MINUTES` — optional wait time fallback
-
-### Seed sample data
+### 2. Frontend
 
 ```bash
-npm run seed
-```
-
-This creates:
-
-- Owner admin: `owner@restaurant.com` / `password123`
-- Kitchen admin: `kitchen@restaurant.com` / `password123`
-- Tables 1–5 with generated QR codes
-- Starter menu items
-
-### Run backend
-
-```bash
-npm run dev
-```
-
-Or:
-
-```bash
-npm start
-```
-
-The backend listens at `http://localhost:5000` by default.
-
-## Frontend setup
-
-From the `frontend/` folder:
-
-```bash
+cd frontend
 python3 -m http.server 3000
 ```
 
-Then open:
-
-- Customer menu: `http://localhost:3000/customer/menu.html?table=1`
+Open in browser:
+- Landing page: `http://localhost:3000`
+- Customer menu (demo): `http://localhost:3000/customer/menu.html?table=1`
 - Admin login: `http://localhost:3000/admin/login.html`
 
-> The frontend must be served over HTTP, not opened as a `file://` URL.
+---
 
-If the backend is hosted elsewhere, update:
+## Demo credentials (after seed)
 
-- `frontend/js/api.js` → `API_BASE`
-- `frontend/js/socketClient.js` → `SOCKET_URL`
+| Role | Email | Password |
+|---|---|---|
+| Owner | `owner@restaurant.com` | `password123` |
+| Kitchen | `kitchen@restaurant.com` | `password123` |
 
-And update backend `.env` `FRONTEND_URL` to the frontend origin.
+---
 
-## Authentication
+## Environment variables
 
-Admin login works via `/api/auth/login` and returns a JWT.
+Create `backend/.env` from `backend/.env.example`:
 
-Protected backend routes include:
+| Variable | Purpose |
+|---|---|
+| `MONGO_URI` | MongoDB connection string |
+| `JWT_SECRET` | Secret for JWT signing |
+| `GEMINI_API_KEY` | Google Gemini API key |
+| `FRONTEND_URL` | Frontend origin (for CORS + QR links) |
+| `PORT` | Backend port (default: `5000`) |
+| `DEFAULT_PREP_TIME_MINUTES` | Fallback prep time estimation |
 
-- menu management
-- table management
-- order status updates
-- analytics
-
-Customer pages do not use login. Table number and socket rooms identify customer sessions.
+---
 
 ## API reference
 
 | Route | Method | Access | Purpose |
 |---|---|---|---|
-| `/api/auth/register` | POST | Public* | Register admin user |
-| `/api/auth/login` | POST | Public | Login admin/kitchen |
-| `/api/auth/me` | GET | Authenticated admin | Get current user |
+| `/api/auth/register` | POST | Public* | Register admin |
+| `/api/auth/login` | POST | Public | Login, get JWT |
+| `/api/auth/me` | GET | Admin | Current user info |
 | `/api/menu` | GET | Public | List menu items |
-| `/api/menu/:id` | GET | Public | Fetch single menu item |
-| `/api/menu` | POST | Admin | Create a menu item |
+| `/api/menu` | POST | Admin | Create menu item |
 | `/api/menu/:id` | PATCH | Admin | Update menu item |
 | `/api/menu/:id` | DELETE | Admin | Delete menu item |
-| `/api/menu/ask` | POST | Public, rate-limited | Dietary/allergy Q&A |
+| `/api/menu/ask` | POST | Public (rate-limited) | Dietary/allergy Q&A |
 | `/api/orders` | POST | Public | Place order |
 | `/api/orders` | GET | Admin | List all orders |
-| `/api/orders/table/:tableNumber` | GET | Public | Live customer order status |
+| `/api/orders/table/:code` | GET | Public | Customer order status |
 | `/api/orders/:id` | PATCH | Admin | Update order status |
-| `/api/recommend` | POST | Public, rate-limited | Menu recommendations |
-| `/api/tables` | POST | Admin | Create table and QR code |
+| `/api/recommend` | POST | Public (rate-limited) | Dish recommendations |
+| `/api/plan-meal` | POST | Public (rate-limited) | AI meal planning |
+| `/api/tables` | POST | Admin | Create table + QR |
 | `/api/tables` | GET | Admin | List tables |
-| `/api/tables/:id` | PATCH | Admin | Activate/deactivate table |
-| `/api/feedback` | POST | Public | Submit dish rating/feedback |
-| `/api/analytics/sales` | GET | Owner | Sales and rating analytics |
+| `/api/tables/:id` | PATCH | Admin | Activate/deactivate |
+| `/api/tables/resolve/:id` | GET | Public | Resolve table by code |
+| `/api/waiter-call` | POST | Public | Call a waiter |
+| `/api/sessions` | POST | Public | Create group session |
+| `/api/sessions/:code` | GET | Public | Get group session |
+| `/api/feedback` | POST | Public | Submit dish ratings |
+| `/api/analytics/sales` | GET | Owner only | Revenue + ratings |
 
-\* In production, protect or disable `/api/auth/register` after initial setup.
+*Protect or disable `/api/auth/register` in production after initial setup.
+
+---
 
 ## Frontend pages
 
-### Customer pages
+### Customer
 
-- `customer/menu.html?table=<N>` — browse menu, ask recommendations, add to cart, and checkout.
-- `customer/cart.html?table=<N>` — review cart, change quantities, place order.
-- `customer/order-status.html?table=<N>&order=<id>` — live order tracking and feedback submission.
+| Page | URL | Purpose |
+|---|---|---|
+| Menu | `customer/menu.html?table=<code>` | Browse, filter, AI features, add to cart |
+| Cart | `customer/cart.html?table=<code>` | Review cart, place order |
+| Order status | `customer/order-status.html?table=<code>` | Live tracking, feedback |
 
-### Admin pages
-
-- `admin/login.html` — admin login.
-- `admin/dashboard.html` — live kitchen dashboard with new order feed.
-- `admin/menu-manage.html` — manage menu items and availability.
-- `admin/analytics.html` — owner-only revenue and rating analytics.
-
-## Detailed feature list
-
-### Menu and ordering
-
-- Category and availability filtering
-- Add to cart per table
-- Server-side price validation and total calculation
-- Order creation with estimated wait time
-- Order status transitions (`placed`, `preparing`, `served`)
-
-### Feedback and ratings
-
-- Submit ratings and comments for ordered dishes
-- Feedback is only accepted for items actually in the referenced order
-- Ratings stored on menu items for analytics
-
-### Table management
-
-- Generate table records with QR codes
-- Store `tableUrl` for direct QR access
-- Activate or deactivate tables
-
-### Analytics
-
-- Owner-only sales report
-- Total revenue and order count
-- Top dishes by quantity sold
-- Dish rating averages across menu items
-
-### AI and Gemini
-
-- `recommend`: dish recommendations based on free-text preferences
-- `askMenu`: dietary/allergy answers using verified menu data
-- Gemini responses are cleaned and validated
-- Rate limiting applied to control API cost
-
-### Live updates
-
-- Socket.io room-based updates for customers and kitchen
-- Kitchen receives `newOrder` and status changes
-- Customers receive order progress for their table only
-
-### Security and validation
-
-- JWT auth and role checks
-- Password hashing with bcrypt
-- Admin-only routes for management actions
-- No trust on frontend-provided prices
-- Rate limit public AI endpoints
-- Socket room join validation prevents cross-table access
-
-## Data models
+> Without a valid `?table=` param (i.e. not from a real QR scan), customers can browse and use AI features but cannot order, call a waiter, or start a group order.
 
 ### Admin
 
-- `name`, `email`, `password`, `role`
-- `owner` or `kitchen`
-
-### MenuItem
-
-- `name`, `category`, `price`, `isVeg`, `imageUrl`, `available`
-- `avgPrepTimeMinutes`, `allergens`, `dietaryTags`, `ratings`
-
-### Order
-
-- `tableNumber`, `items`, `status`, `totalAmount`, `estimatedWaitTime`
-
-### Table
-
-- `tableNumber`, `qrCodeUrl`, `tableUrl`, `isActive`
-
-## Folder structure
-
-### Backend
-
-```
-backend/
-├── controllers/    request handling logic
-├── middleware/     auth, role checks, rate limiting
-├── models/         Mongoose schemas
-├── routes/         Express route definitions
-├── socket/         Socket.io setup and emit helpers
-├── utils/          Gemini, QR generation, wait time, seeding
-└── server.js       entry point
-```
-
-### Frontend
-
-```
-frontend/
-├── admin/          admin UI pages
-├── customer/       customer ordering pages
-├── css/            styles
-└── js/             application scripts
-```
-
-## Environment variables
-
-### Backend `.env`
-
-- `MONGO_URI`
-- `JWT_SECRET`
-- `GEMINI_API_KEY`
-- `FRONTEND_URL`
-- `PORT`
-- `DEFAULT_PREP_TIME_MINUTES`
-
-## Quick commands
-
-```bash
-# Backend
-cd backend
-npm install
-npm run seed
-npm run dev
-
-# Frontend
-cd frontend
-python3 -m http.server 3000
-```
-
-## Useful links
-
-- Backend API root: `http://localhost:5000/api`
-- Customer example: `http://localhost:3000/customer/menu.html?table=1`
-- Admin login: `http://localhost:3000/admin/login.html`
+| Page | URL | Purpose |
+|---|---|---|
+| Login | `admin/login.html` | Admin authentication |
+| Dashboard | `admin/dashboard.html` | Live kitchen order kanban |
+| Menu manage | `admin/menu-manage.html` | Menu item CRUD |
+| Tables | `admin/tables.html` | Table + QR management |
+| Analytics | `admin/analytics.html` | Owner-only revenue/ratings |
 
 ---
 
-If you want, I can also remove the separate `backend/README.md` and `frontend/README.md` files and keep this single root README.
-cd frontend
-python3 -m http.server 3000
-```
+## Deployment
 
-## Useful links
+A `render.yaml` is included for Render.com deployment.
 
-- Backend API: `http://localhost:5000/api`
-- Customer example: `http://localhost:3000/customer/menu.html?table=1`
-- Admin login: `http://localhost:3000/admin/login.html`
+After deploying:
+1. Update `API_BASE` in `frontend/js/api.js` to the backend URL
+2. Update `SOCKET_URL` in `frontend/js/socketClient.js`
+3. Set `FRONTEND_URL` in backend `.env` to the frontend URL
 
 ---
 
-If you want, I can also merge the existing backend/frontend README content into this root README and remove the duplicate files.
+## Further reading
+
+- [AGENTS.md](./AGENTS.md) — tech stack, architecture, data flow, security rules
+- [GUIDELINES.md](./GUIDELINES.md) — folder structure, naming conventions, contribution rules
+- [backend/README.md](./backend/README.md) — backend-specific setup and API details

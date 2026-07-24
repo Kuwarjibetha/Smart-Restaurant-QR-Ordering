@@ -69,7 +69,6 @@
     <p class="text-xs text-stone-500 text-center py-4">Fetching order details...</p>
   </section>
 
-
   <section id="feedback-section" class="card p-6 shadow-sm hidden">
     <h2 class="eyebrow mb-1">Rate Your Dishes</h2>
     <p class="text-xs text-stone-500 mb-4">How was your food? Let the chef know!</p>
@@ -85,10 +84,35 @@
 <script src="../js/socketClient.js"></script>
 <script>
   const params = new URLSearchParams(window.location.search);
-  const rawTableIdentifier = params.get("table") || "1";
+  const rawTableIdentifier = params.get("table");
+  const hasTable = !!rawTableIdentifier;
   let activeTableIdentifier = rawTableIdentifier;
-  let activeTableNumber = 1;
+  let activeTableNumber = null;
   let requestedOrderId = params.get("order");
+
+  if (!hasTable) {
+    document.querySelector("main").innerHTML = `
+      <div style="
+        max-width:420px; margin:60px auto; text-align:center;
+        padding:40px 24px; background:var(--white);
+        border:2px solid #F59E0B; border-radius:20px; box-shadow:0 8px 32px rgba(43,36,32,0.10);
+      ">
+        <div style="font-size:3rem; margin-bottom:16px">📱</div>
+        <h2 style="font-family:var(--font-display); font-size:1.3rem; color:var(--charcoal); margin-bottom:10px">
+          No table found
+        </h2>
+        <p style="font-size:0.8rem; color:var(--charcoal-soft); line-height:1.6; margin-bottom:24px">
+          Order tracking is linked to a specific table. Please scan the
+          <strong>QR code at your table</strong> to view your live order status.
+        </p>
+        <a href="menu.html" class="btn-secondary" style="display:inline-block; padding:10px 24px; text-decoration:none; font-size:0.8rem">
+          ← Back to Menu
+        </a>
+      </div>
+    `;
+
+    throw new Error("[QR Gate] No table identifier — halting order-status page load.");
+  }
 
   let currentOrder = null;
   let allTableOrders = [];
@@ -260,7 +284,7 @@
         allTableOrders = orders;
         let order = requestedOrderId ? orders.find((o) => o._id === requestedOrderId) : null;
         if (!order) {
-          order = orders[0]; // Fallback to latest order
+          order = orders[0];
         }
         currentOrder = order;
         paintStatus(order.status);

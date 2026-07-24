@@ -72,6 +72,19 @@ function connectGroupSocket(sessionCode, bannerEl, onCartChanged) {
 }
 
 function renderStartBanner(tableNumber, bannerEl, onCartChanged) {
+  // Gate: no table = no group order
+  if (!tableNumber) {
+    bannerEl.innerHTML = `
+      <span style="
+        display:inline-flex; align-items:center; gap:6px;
+        background:#FFFBEC; border:1.5px solid #F59E0B;
+        color:#92400E; border-radius:10px; padding:7px 12px;
+        font-size:0.72rem; font-weight:600; line-height:1.3;
+      ">📱 Scan the QR code at your table to start a group order</span>
+    `;
+    return;
+  }
+
   bannerEl.innerHTML = `
     <p class="eyebrow mb-2">Ordering with friends?</p>
     <p class="text-sm mb-3" style="color: var(--charcoal-soft)">Start a group order — everyone at this table can add their own food from their own phone, then one person confirms it.</p>
@@ -97,6 +110,7 @@ function renderStartBanner(tableNumber, bannerEl, onCartChanged) {
     }
   };
 }
+
 
 function renderActiveBanner(sessionCode, bannerEl, onCartChanged) {
   const session = currentSession;
