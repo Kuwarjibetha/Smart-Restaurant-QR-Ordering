@@ -52,7 +52,10 @@ function connectGroupSocket(sessionCode, bannerEl, onCartChanged) {
       if (onCartChanged) onCartChanged();
     },
     onSessionConfirmed: (order) => {
-      window.location.href = `order-status.html?table=${order.tableCode || order.tableNumber}`;
+      if (order && order._id && typeof addMyOrderId === "function") {
+        addMyOrderId(order._id);
+      }
+      window.location.href = `order-status.html?table=${order.tableCode || order.tableNumber}&order=${order._id}`;
     },
   });
 

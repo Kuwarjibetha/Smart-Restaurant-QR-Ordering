@@ -61,3 +61,47 @@ function clearCart(tableNumber) {
 function cartTotal(cart) {
   return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 }
+
+function getMyOrderIds() {
+  try {
+    const raw = localStorage.getItem("myOrderIds");
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function addMyOrderId(orderId) {
+  if (!orderId) return;
+  const ids = getMyOrderIds();
+  if (!ids.includes(orderId)) {
+    ids.push(orderId);
+    localStorage.setItem("myOrderIds", JSON.stringify(ids));
+  }
+}
+
+function filterCustomerOrders(orders) {
+  if (!Array.isArray(orders)) return [];
+  const myIds = getMyOrderIds();
+  const savedName = (localStorage.getItem("customerName") || "").trim().toLowerCase();
+  const savedMobile = (localStorage.getItem("customerMobile") || "").trim();
+
+  if (myIds.length === 0 && !savedName && !savedMobile) {
+    return [];
+  }
+
+  return orders.filter((o) => {
+    if (!o) return false;
+    if (o._id && myIds.includes(o._id)) return true;
+    if (savedMobile && o.customerMobile && o.customerMobile.trim() === savedMobile) {
+      if (o._id) addMyOrderId(o._id);
+      return true;
+    }
+    if (savedName && o.customerName && o.customerName.trim().toLowerCase() === savedName) {
+      if (o._id) addMyOrderId(o._id);
+      return true;
+    }
+    return false;
+  });
+}
+

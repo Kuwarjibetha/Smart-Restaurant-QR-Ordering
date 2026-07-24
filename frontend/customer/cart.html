@@ -12,22 +12,23 @@
 <body class="pb-32" style="background:var(--cream)">
 
   <header class="sticky top-0 z-30 shadow-sm" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <a id="back-link" href="menu.html" class="btn-secondary px-3 py-1.5 text-xs no-underline flex items-center gap-1 font-semibold">
-          <span>←</span> <span>Back to Menu</span>
+    <div class="max-w-4xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0 flex-shrink-0">
+        <a id="back-link" href="menu.html" class="btn-secondary px-2.5 py-1.5 text-xs no-underline flex items-center gap-1 font-semibold whitespace-nowrap">
+          <span>←</span> <span class="hidden sm:inline">Back to</span> <span>Menu</span>
         </a>
-        <h1 class="display text-xl font-bold">Review Your Cart</h1>
+        <h1 class="display text-base sm:text-xl font-bold whitespace-nowrap">Review Cart</h1>
       </div>
-      <div class="flex items-center gap-2">
-        <a id="orders-link-cart" href="order-status.html" class="btn-secondary px-3 py-1.5 text-xs no-underline flex items-center gap-1 font-semibold">
-          <span>📜</span> <span>My Orders</span>
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+        <a id="orders-link-cart" href="order-status.html" class="btn-secondary px-2.5 py-1.5 text-xs no-underline flex items-center gap-1 font-semibold whitespace-nowrap">
+          <span>📜</span> <span class="hidden sm:inline">My</span> <span>Orders</span>
         </a>
-        <span id="table-label" class="text-xs font-semibold px-2.5 py-1 rounded-full"
+        <span id="table-label" class="text-[11px] sm:text-xs font-semibold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full whitespace-nowrap"
           style="background:var(--cream-deep); border:1px solid var(--clay-line); color:var(--saffron-deep)">Table —</span>
       </div>
     </div>
   </header>
+
 
   <main class="max-w-4xl mx-auto px-4 pt-6">
 
@@ -131,6 +132,23 @@
     } else {
 
     async function initCartTable() {
+      let parsedNum = null;
+      if (!isNaN(Number(rawTableIdentifier))) {
+        parsedNum = Number(rawTableIdentifier);
+      } else {
+        const match = String(rawTableIdentifier).match(/tbl_(\d+)_/);
+        if (match) parsedNum = Number(match[1]);
+      }
+
+      if (parsedNum) {
+        activeTableNumber = parsedNum;
+        document.getElementById("table-label").textContent = `Table ${parsedNum}`;
+      }
+
+      document.getElementById("back-link").href = `menu.html?table=${activeTableIdentifier}`;
+      document.getElementById("empty-menu-link").href = `menu.html?table=${activeTableIdentifier}`;
+      document.getElementById("orders-link-cart").href = `order-status.html?table=${activeTableIdentifier}`;
+
       try {
         const tableData = await api.resolveTable(rawTableIdentifier);
         if (tableData && tableData.tableNumber) {
@@ -143,10 +161,7 @@
           document.getElementById("orders-link-cart").href = `order-status.html?table=${activeTableIdentifier}`;
         }
       } catch (e) {
-        const fallbackNum = Number(rawTableIdentifier);
-        if (!isNaN(fallbackNum) && fallbackNum > 0) {
-          document.getElementById("table-label").textContent = `Table ${fallbackNum}`;
-        }
+        console.warn("Cart table resolution notice:", e);
       }
       render();
     }
@@ -229,6 +244,7 @@
           customerName,
           customerMobile
         );
+        if (order && order._id) addMyOrderId(order._id);
         clearCart(activeTableIdentifier);
         clearCart(rawTableIdentifier);
         window.location.href = `order-status.html?table=${activeTableIdentifier}&order=${order._id}`;

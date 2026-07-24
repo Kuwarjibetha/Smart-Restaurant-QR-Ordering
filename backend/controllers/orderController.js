@@ -4,7 +4,7 @@ const MenuItem = require("../models/MenuItem");
 const Table = require("../models/Table");
 const { estimateWaitTime } = require("../utils/waitTime");
 const { emitNewOrder, emitOrderStatusUpdate } = require("../socket/socketHandler");
-
+const { findOrCreateTable } = require("../utils/generateQR");
 
 async function createOrder(req, res) {
   try {
@@ -15,14 +15,7 @@ async function createOrder(req, res) {
       return res.status(400).json({ error: "table identifier and a non-empty items array are required" });
     }
 
-    const isNum = !isNaN(Number(identifier));
-    const table = await Table.findOne({
-      $or: [
-        { tableCode: identifier },
-        ...(isNum ? [{ tableNumber: Number(identifier) }] : [])
-      ],
-      isActive: true,
-    });
+    const table = await findOrCreateTable(identifier);
 
     if (!table) {
       return res.status(404).json({ error: "Invalid or inactive table QR code." });
@@ -114,14 +107,7 @@ async function updateOrderStatus(req, res) {
 async function getOrdersForTable(req, res) {
   try {
     const identifier = String(req.params.tableNumber).trim();
-    const isNum = !isNaN(Number(identifier));
-
-    const table = await Table.findOne({
-      $or: [
-        { tableCode: identifier },
-        ...(isNum ? [{ tableNumber: Number(identifier) }] : [])
-      ]
-    });
+    const table = await findOrCreateTable(identifier);
 
     if (!table) {
       return res.status(404).json({ error: "Invalid table QR code", orders: [] });

@@ -5,6 +5,7 @@ const Table = require("../models/Table");
 const Order = require("../models/Order");
 const { estimateWaitTime } = require("../utils/waitTime");
 const { emitNewOrder, emitSessionUpdate, emitSessionConfirmed } = require("../socket/socketHandler");
+const { findOrCreateTable } = require("../utils/generateQR");
 
 function generateSessionCode() {
   return crypto.randomBytes(4).toString("hex"); // e.g. "a1b2c3d4" - unguessable, this IS the access control
@@ -23,14 +24,8 @@ async function createSession(req, res) {                // POST /api/sessions (p
       return res.status(400).json({ error: "table identifier and hostDeviceId are required" });
     }
 
-    const isNum = !isNaN(Number(identifier));
-    const table = await Table.findOne({
-      $or: [
-        { tableCode: identifier },
-        ...(isNum ? [{ tableNumber: Number(identifier) }] : [])
-      ],
-      isActive: true,
-    });
+    const table = await findOrCreateTable(identifier);
+
     if (!table) {
       return res.status(404).json({ error: "Invalid or inactive table QR code." });
     }

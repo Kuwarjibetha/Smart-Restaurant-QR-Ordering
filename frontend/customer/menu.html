@@ -15,28 +15,27 @@
 
 <body class="pb-28">
 
-  <header class="sticky top-0 z-30 shadow-sm"
+  <header class="sticky top-0 z-30 shadow-sm w-full"
     style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <a href="../index.html" class="display text-xl no-underline" style="color:var(--charcoal)">🌿 Spice Trail</a>
-        <span id="table-label" class="text-xs font-semibold px-2.5 py-1 rounded-full"
-          style="background:var(--cream-deep); border:1px solid var(--clay-line); color:var(--saffron-deep)">Table
-          —</span>
+    <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2 w-full">
+      <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
+        <a href="../index.html" class="display text-sm sm:text-lg md:text-xl font-bold no-underline whitespace-nowrap" style="color:var(--charcoal)">🌿 Spice Trail</a>
+        <span id="table-label" class="text-[10px] sm:text-xs font-semibold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full whitespace-nowrap flex-shrink-0"
+          style="background:var(--cream-deep); border:1px solid var(--clay-line); color:var(--saffron-deep)">Table —</span>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
         <a href="order-status.html" id="orders-link"
-          class="card px-3 py-1.5 flex items-center gap-1.5 relative no-underline hover:bg-stone-50"
+          class="card px-2 py-1 sm:px-3 sm:py-1.5 flex items-center gap-1 relative no-underline hover:bg-stone-50"
           style="color:var(--charcoal);">
-          <span class="text-xs font-semibold flex items-center gap-1">📜 <span>My Orders</span></span>
+          <span class="text-xs sm:text-sm font-semibold flex items-center gap-1 whitespace-nowrap">📜 <span class="hidden sm:inline">My Orders</span><span class="sm:hidden">Orders</span></span>
           <span id="active-orders-badge"
             class="hidden text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-600 text-white">0</span>
         </a>
         <a href="cart.html" id="cart-link"
-          class="card px-3.5 py-1.5 flex items-center gap-2 relative no-underline hover:bg-stone-50"
+          class="card px-2 py-1 sm:px-3.5 sm:py-1.5 flex items-center gap-1 relative no-underline hover:bg-stone-50"
           style="color:var(--charcoal);">
-          <span class="text-base">🧺 Cart</span>
+          <span class="text-xs sm:text-sm font-semibold flex items-center gap-1 whitespace-nowrap">🧺 <span class="hidden sm:inline">Cart</span></span>
           <span id="cart-count" class="text-xs font-bold px-1.5 py-0.5 rounded-full"
             style="background:var(--chili); color:var(--white)">0</span>
         </a>
@@ -50,7 +49,7 @@
 
       <div>
 
-        <div class="flex items-center justify-between gap-3 mb-4 card p-3">
+        <div class="flex items-center justify-between gap-3 mb-3 card p-3">
           <div class="relative flex-1">
             <input id="search-menu-input" type="text" placeholder="Search dish by name or ingredient…"
               class="w-full px-3 py-2 pl-9 rounded-lg text-xs"
@@ -65,7 +64,24 @@
           </label>
         </div>
 
-        <div class="card p-2 mb-6">
+        <!-- Mobile Quick Action Bar (visible on mobile < lg) -->
+        <div class="lg:hidden flex items-center justify-between gap-2 mb-4 p-2.5 rounded-xl card shadow-sm" style="background: var(--cream-deep);">
+          <span class="text-xs font-bold flex items-center gap-1" style="color:var(--charcoal)">⚡ Quick Actions:</span>
+          <div class="flex items-center gap-1.5">
+            <button onclick="openMobileModal('waiter')" class="btn-secondary px-2.5 py-1.5 text-xs font-semibold flex items-center gap-1 bg-white shadow-sm">
+              🙋 <span>Waiter</span>
+            </button>
+            <button onclick="openMobileModal('ai')" class="btn-secondary px-2.5 py-1.5 text-xs font-semibold flex items-center gap-1 bg-white shadow-sm">
+              🤖 <span>AI Advisor</span>
+            </button>
+            <button onclick="openMobileModal('group')" class="btn-secondary px-2.5 py-1.5 text-xs font-semibold flex items-center gap-1 bg-white shadow-sm">
+              👥 <span>Group</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sticky Category Pills Bar -->
+        <div class="card p-2 mb-6 sticky top-[48px] z-20 shadow-sm" style="background:var(--cream)">
           <div id="category-pills" class="category-bar-scroll">
             <button class="cat-pill active" data-category="all">All Dishes</button>
             <button class="cat-pill" data-category="Starters">🥟 Starters</button>
@@ -82,7 +98,8 @@
         </div>
       </div>
 
-      <div class="space-y-6">
+      <!-- Desktop Sidebar (Hidden on mobile < lg) -->
+      <div class="space-y-6 lg:block hidden">
 
         <div class="card p-5 shadow-sm">
           <h3 class="display text-base mb-1 flex items-center gap-2">🙋 <span>Call Waiter</span></h3>
@@ -92,7 +109,7 @@
             <button class="btn-secondary py-2 text-xs waiter-call-btn" data-type="check">🧾 Check</button>
             <button class="btn-secondary py-2 text-xs waiter-call-btn" data-type="help">🙋 Help</button>
           </div>
-          <p id="waiter-call-status" class="text-xs mt-2 font-semibold" style="color: var(--cardamom)"></p>
+          <p id="waiter-call-status" class="waiter-call-status-text text-xs mt-2 font-semibold" style="color: var(--cardamom)"></p>
         </div>
 
         <div class="card p-5 shadow-sm">
@@ -184,6 +201,81 @@
     </a>
   </div>
 
+  <!-- Mobile Feature Modals Overlay -->
+  <div id="mobile-modal-overlay" onclick="handleOverlayClick(event)" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <!-- Waiter Modal -->
+    <div id="modal-waiter-content" class="modal-content-item card p-5 max-w-md w-full relative hidden shadow-2xl" style="background:var(--cream)">
+      <button onclick="closeMobileModal()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-stone-200 text-stone-700 font-bold text-sm flex items-center justify-center hover:bg-stone-300">✕</button>
+      <h3 class="display text-lg mb-1 flex items-center gap-2">🙋 <span>Call Waiter</span></h3>
+      <p class="text-xs text-stone-500 mb-4">Request instant staff assistance at your table.</p>
+      <div class="grid grid-cols-3 gap-2 mb-3">
+        <button class="btn-secondary py-2.5 text-xs waiter-call-btn bg-white" data-type="water">💧 Water</button>
+        <button class="btn-secondary py-2.5 text-xs waiter-call-btn bg-white" data-type="check">🧾 Check</button>
+        <button class="btn-secondary py-2.5 text-xs waiter-call-btn bg-white" data-type="help">🙋 Help</button>
+      </div>
+      <p class="waiter-call-status-text text-xs mt-2 font-semibold" style="color: var(--cardamom)"></p>
+    </div>
+
+    <!-- AI Advisor Modal -->
+    <div id="modal-ai-content" class="modal-content-item card p-5 max-w-md w-full relative hidden shadow-2xl max-h-[85vh] overflow-y-auto space-y-4" style="background:var(--cream)">
+      <button onclick="closeMobileModal()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-stone-200 text-stone-700 font-bold text-sm flex items-center justify-center hover:bg-stone-300">✕</button>
+      <h3 class="display text-lg mb-1 flex items-center gap-2">🤖 <span>AI Food Advisor</span></h3>
+      <p class="text-xs text-stone-500 mb-2">Get smart meal plans & dish advice powered by Gemini AI.</p>
+
+      <div class="card p-4 bg-white shadow-sm">
+        <h4 class="font-bold text-xs mb-1" style="color:var(--charcoal)">🚀 Smart Meal Planner</h4>
+        <p class="text-[11px] text-stone-500 mb-3">Input your budget and group size to get dish suggestions.</p>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <input id="modal-plan-people" type="number" min="1" max="50" placeholder="People (e.g. 4)"
+            class="px-3 py-2 rounded-lg text-xs border" style="border-color:var(--clay-line); outline:none;" />
+          <input id="modal-plan-budget" type="number" min="1" placeholder="Budget ₹ (e.g. 1200)"
+            class="px-3 py-2 rounded-lg text-xs border" style="border-color:var(--clay-line); outline:none;" />
+          <select id="modal-plan-meal-type" class="px-3 py-2 rounded-lg text-xs border" style="border-color:var(--clay-line); outline:none;">
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+          </select>
+          <select id="modal-plan-diet" class="px-3 py-2 rounded-lg text-xs border" style="border-color:var(--clay-line); outline:none;">
+            <option value="veg">Veg only</option>
+            <option value="non-veg">Non-veg OK</option>
+            <option value="both">Mixed group</option>
+          </select>
+        </div>
+        <button id="modal-plan-meal-btn" class="btn-primary w-full py-2.5 text-xs font-semibold">Plan Order 🚀</button>
+        <div id="modal-meal-plan-result" class="mt-3 text-xs"></div>
+      </div>
+
+      <div class="card p-4 bg-white shadow-sm space-y-3">
+        <div>
+          <h4 class="font-bold text-xs mb-1" style="color:var(--charcoal)">✨ Ask Dish Recommendation</h4>
+          <div class="flex gap-2">
+            <input id="modal-recommend-input" type="text" placeholder="e.g. spicy veg dish under ₹200"
+              class="flex-1 px-3 py-2 rounded-lg text-xs border" style="border-color:var(--clay-line); outline:none;" />
+            <button id="modal-recommend-btn" class="btn-primary px-3 py-2 text-xs shrink-0">Ask</button>
+          </div>
+          <div id="modal-recommend-results" class="mt-2 flex flex-wrap text-xs"></div>
+        </div>
+
+        <div style="border-top: 1px solid var(--clay-line); padding-top: 10px;">
+          <h4 class="font-bold text-xs mb-1" style="color:var(--charcoal)">❓ Allergy or Dietary Question</h4>
+          <div class="flex gap-2">
+            <input id="modal-ask-menu-input" type="text" placeholder="e.g. is Butter Chicken nut-free?"
+              class="flex-1 px-3 py-2 rounded-lg text-xs border" style="border-color:var(--clay-line); outline:none;" />
+            <button id="modal-ask-menu-btn" class="btn-primary px-3 py-2 text-xs shrink-0">Ask</button>
+          </div>
+          <div id="modal-ask-menu-result" class="mt-2 text-xs"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group Order Modal -->
+    <div id="modal-group-content" class="modal-content-item card p-5 max-w-md w-full relative hidden shadow-2xl" style="background:var(--cream)">
+      <button onclick="closeMobileModal()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-stone-200 text-stone-700 font-bold text-sm flex items-center justify-center hover:bg-stone-300">✕</button>
+      <h3 class="display text-lg mb-1 flex items-center gap-2">👥 <span>Group Order</span></h3>
+      <p class="text-xs text-stone-500 mb-3">Share one cart with friends sitting at your table.</p>
+      <div id="modal-group-container"></div>
+    </div>
+  </div>
+
   <script src="../js/api.js"></script>
   <script src="../js/cart.js"></script>
   <script src="../js/recommend.js"></script>
@@ -232,20 +324,59 @@
       if (floatBar) floatBar.style.display = "none";
     }
 
+    // Modal Helpers
+    function openMobileModal(type) {
+      const overlay = document.getElementById("mobile-modal-overlay");
+      if (!overlay) return;
+      document.querySelectorAll(".modal-content-item").forEach(el => el.classList.add("hidden"));
+
+      if (type === 'waiter') document.getElementById("modal-waiter-content")?.classList.remove("hidden");
+      if (type === 'ai') document.getElementById("modal-ai-content")?.classList.remove("hidden");
+      if (type === 'group') {
+        document.getElementById("modal-group-content")?.classList.remove("hidden");
+        syncSidebarGroupBanner();
+      }
+
+      overlay.classList.remove("hidden");
+      overlay.classList.add("flex");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeMobileModal() {
+      const overlay = document.getElementById("mobile-modal-overlay");
+      if (!overlay) return;
+      overlay.classList.add("hidden");
+      overlay.classList.remove("flex");
+      document.body.style.overflow = "";
+    }
+
+    function handleOverlayClick(e) {
+      if (e.target.id === "mobile-modal-overlay") {
+        closeMobileModal();
+      }
+    }
+
     async function checkActiveOrders() {
       try {
         const { orders } = await api.getOrdersForTable(activeTableIdentifier);
-        if (orders && orders.length > 0) {
-          const badge = document.getElementById("active-orders-badge");
-          const floatOrderBar = document.getElementById("floating-order-bar");
+        const myOrders = filterCustomerOrders(orders);
+        const badge = document.getElementById("active-orders-badge");
+        const floatOrderBar = document.getElementById("floating-order-bar");
+
+        if (myOrders && myOrders.length > 0) {
           if (badge) {
-            badge.textContent = orders.length;
+            badge.textContent = myOrders.length;
             badge.classList.remove("hidden");
           }
-          const activeOrders = orders.filter(o => o.status !== "served");
+          const activeOrders = myOrders.filter(o => o.status !== "served");
           if (floatOrderBar && activeOrders.length > 0) {
             floatOrderBar.classList.remove("hidden");
+          } else if (floatOrderBar) {
+            floatOrderBar.classList.add("hidden");
           }
+        } else {
+          if (badge) badge.classList.add("hidden");
+          if (floatOrderBar) floatOrderBar.classList.add("hidden");
         }
       } catch (e) {
 
@@ -257,6 +388,27 @@
         document.getElementById("table-label").textContent = "Browse Mode";
         return;
       }
+
+      let parsedNum = null;
+      if (!isNaN(Number(rawTableIdentifier))) {
+        parsedNum = Number(rawTableIdentifier);
+      } else {
+        const match = String(rawTableIdentifier).match(/tbl_(\d+)_/);
+        if (match) parsedNum = Number(match[1]);
+      }
+
+      if (parsedNum) {
+        activeTableNumber = parsedNum;
+        document.getElementById("table-label").textContent = `Table ${parsedNum}`;
+      }
+
+      document.getElementById("cart-link").href = `cart.html?table=${activeTableIdentifier}`;
+      document.getElementById("float-checkout-btn").href = `cart.html?table=${activeTableIdentifier}`;
+      document.getElementById("orders-link").href = `order-status.html?table=${activeTableIdentifier}`;
+      if (document.getElementById("float-order-link")) {
+        document.getElementById("float-order-link").href = `order-status.html?table=${activeTableIdentifier}`;
+      }
+
       try {
         const tableData = await api.resolveTable(rawTableIdentifier);
         if (tableData && tableData.tableNumber) {
@@ -282,10 +434,6 @@
         }
       } catch (err) {
         console.warn("Table resolution notice:", err);
-        const fallbackNum = Number(rawTableIdentifier);
-        if (!isNaN(fallbackNum) && fallbackNum > 0) {
-          document.getElementById("table-label").textContent = `Table ${fallbackNum}`;
-        }
       }
     }
 
@@ -448,37 +596,64 @@
     document.getElementById("veg-only-toggle").onchange = renderFilteredMenu;
     document.getElementById("search-menu-input")?.addEventListener("input", renderFilteredMenu);
 
-    document.getElementById("plan-meal-btn").onclick = () => {
-      handleMealPlanSubmit(
-        {
-          peopleCount: document.getElementById("plan-people"),
-          budget: document.getElementById("plan-budget"),
-          mealType: document.getElementById("plan-meal-type"),
-          dietPreference: document.getElementById("plan-diet"),
-        },
-        document.getElementById("meal-plan-result")
-      );
-    };
+    // AI & Plan Handlers for both sidebar and modal
+    function bindAIHandlers(btnId, peopleId, budgetId, typeId, dietId, resultId) {
+      const btn = document.getElementById(btnId);
+      if (btn) {
+        btn.onclick = () => {
+          handleMealPlanSubmit(
+            {
+              peopleCount: document.getElementById(peopleId),
+              budget: document.getElementById(budgetId),
+              mealType: document.getElementById(typeId),
+              dietPreference: document.getElementById(dietId),
+            },
+            document.getElementById(resultId)
+          );
+        };
+      }
+    }
 
-    document.getElementById("ask-menu-btn").onclick = () => {
-      handleAskMenuSubmit(document.getElementById("ask-menu-input"), document.getElementById("ask-menu-result"));
-    };
-    document.getElementById("ask-menu-input").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") document.getElementById("ask-menu-btn").click();
-    });
+    bindAIHandlers("plan-meal-btn", "plan-people", "plan-budget", "plan-meal-type", "plan-diet", "meal-plan-result");
+    bindAIHandlers("modal-plan-meal-btn", "modal-plan-people", "modal-plan-budget", "modal-plan-meal-type", "modal-plan-diet", "modal-meal-plan-result");
 
-    document.getElementById("recommend-btn").onclick = () => {
-      handleRecommendSubmit(document.getElementById("recommend-input"), document.getElementById("recommend-results"));
-    };
-    document.getElementById("recommend-input").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") document.getElementById("recommend-btn").click();
-    });
+    function bindAskHandlers(btnId, inputId, resultId) {
+      const btn = document.getElementById(btnId);
+      const input = document.getElementById(inputId);
+      if (btn && input) {
+        btn.onclick = () => handleAskMenuSubmit(input, document.getElementById(resultId));
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") btn.click();
+        });
+      }
+    }
 
-    const waiterStatusEl = document.getElementById("waiter-call-status");
+    bindAskHandlers("ask-menu-btn", "ask-menu-input", "ask-menu-result");
+    bindAskHandlers("modal-ask-menu-btn", "modal-ask-menu-input", "modal-ask-menu-result");
+
+    function bindRecommendHandlers(btnId, inputId, resultId) {
+      const btn = document.getElementById(btnId);
+      const input = document.getElementById(inputId);
+      if (btn && input) {
+        btn.onclick = () => handleRecommendSubmit(input, document.getElementById(resultId));
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") btn.click();
+        });
+      }
+    }
+
+    bindRecommendHandlers("recommend-btn", "recommend-input", "recommend-results");
+    bindRecommendHandlers("modal-recommend-btn", "modal-recommend-input", "modal-recommend-results");
+
+    // Waiter Call Handlers
+    const waiterStatusEls = document.querySelectorAll(".waiter-call-status-text");
+
+    function updateWaiterStatusText(text) {
+      waiterStatusEls.forEach(el => el.textContent = text);
+    }
 
     if (!hasTable) {
-
-      waiterStatusEl.innerHTML = scanPromptHTML("call a waiter");
+      waiterStatusEls.forEach(el => el.innerHTML = scanPromptHTML("call a waiter"));
       document.querySelectorAll(".waiter-call-btn").forEach(btn => {
         btn.disabled = true;
         btn.style.opacity = "0.4";
@@ -486,18 +661,18 @@
       });
     } else {
       connectAsCustomer(rawTableIdentifier, () => { }, () => {
-        waiterStatusEl.textContent = "Your request has been handled. Thank you!";
+        updateWaiterStatusText("Your request has been handled. Thank you!");
       });
 
       document.querySelectorAll(".waiter-call-btn").forEach((btn) => {
         btn.onclick = async () => {
           const requestType = btn.getAttribute("data-type");
-          waiterStatusEl.textContent = "Calling waiter…";
+          updateWaiterStatusText("Calling waiter…");
           try {
             await api.createWaiterCall(activeTableIdentifier, requestType);
-            waiterStatusEl.textContent = "A waiter has been notified. Thanks for your patience!";
+            updateWaiterStatusText("A waiter has been notified. Thanks for your patience!");
           } catch (err) {
-            waiterStatusEl.textContent = err.message || "Couldn't reach a waiter — please try again.";
+            updateWaiterStatusText(err.message || "Couldn't reach a waiter — please try again.");
           }
         };
       });
@@ -509,23 +684,24 @@
 
     const groupBannerEl = document.getElementById("group-order-banner");
     const sidebarGroupContainer = document.getElementById("sidebar-group-container");
+    const modalGroupContainer = document.getElementById("modal-group-container");
 
     function syncSidebarGroupBanner() {
-      if (!sidebarGroupContainer || !groupBannerEl) return;
-      const clone = groupBannerEl.cloneNode(true);
-      clone.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
-      const cloneBtn = clone.querySelector("button");
-      if (cloneBtn) {
-        cloneBtn.classList.add("sidebar-group-btn");
-      }
-      sidebarGroupContainer.innerHTML = clone.innerHTML;
-      const sidebarBtn = sidebarGroupContainer.querySelector(".sidebar-group-btn, button");
-      if (sidebarBtn) {
-        sidebarBtn.onclick = () => {
-          const realBtn = groupBannerEl.querySelector("button");
-          if (realBtn) realBtn.click();
-        };
-      }
+      if (!groupBannerEl) return;
+      const html = groupBannerEl.innerHTML;
+      if (sidebarGroupContainer) sidebarGroupContainer.innerHTML = html;
+      if (modalGroupContainer) modalGroupContainer.innerHTML = html;
+
+      [sidebarGroupContainer, modalGroupContainer].forEach(container => {
+        if (!container) return;
+        const btn = container.querySelector("button");
+        if (btn) {
+          btn.onclick = () => {
+            const realBtn = groupBannerEl.querySelector("button");
+            if (realBtn) realBtn.click();
+          };
+        }
+      });
     }
 
     const syncObserver = new MutationObserver(syncSidebarGroupBanner);

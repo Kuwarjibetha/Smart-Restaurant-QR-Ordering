@@ -1,6 +1,7 @@
 const WaiterCall = require("../models/WaiterCall");
 const Table = require("../models/Table");
 const { emitNewWaiterCall, emitWaiterCallResolved } = require("../socket/socketHandler");
+const { findOrCreateTable } = require("../utils/generateQR");
 
 // POST /api/waiter-call — public, called by customer
 exports.createWaiterCall = async (req, res) => {
@@ -15,14 +16,7 @@ exports.createWaiterCall = async (req, res) => {
       return res.status(400).json({ error: "Invalid requestType" });
     }
 
-    const isNum = !isNaN(Number(identifier));
-    const table = await Table.findOne({
-      $or: [
-        { tableCode: identifier },
-        ...(isNum ? [{ tableNumber: Number(identifier) }] : [])
-      ],
-      isActive: true,
-    });
+    const table = await findOrCreateTable(identifier);
 
     if (!table) {
       return res.status(404).json({ error: "Invalid or inactive table QR code." });

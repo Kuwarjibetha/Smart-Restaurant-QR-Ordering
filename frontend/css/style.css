@@ -16,6 +16,11 @@
 
 * { box-sizing: border-box; }
 
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   background: var(--cream);
   color: var(--charcoal);
@@ -89,8 +94,9 @@ h1, h2, h3, .display {
 /* --- Split Layout System (Left Menu, Right Features) --- */
 .split-container {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
+  width: 100%;
 }
 @media (min-width: 1024px) {
   .split-container {

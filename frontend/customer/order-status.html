@@ -13,21 +13,22 @@
 <body class="pb-20" style="background:var(--cream)">
 
 <header class="sticky top-0 z-30 shadow-sm" style="background: var(--cream); border-bottom: 1px solid var(--clay-line);">
-  <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <a id="back-to-menu-header" href="menu.html" class="btn-secondary px-3 py-1.5 text-xs no-underline flex items-center gap-1 font-semibold">
+  <div class="max-w-3xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2 min-w-0 flex-shrink-0">
+      <a id="back-to-menu-header" href="menu.html" class="btn-secondary px-2.5 py-1.5 text-xs no-underline flex items-center gap-1 font-semibold whitespace-nowrap">
         <span>←</span> <span>Menu</span>
       </a>
-      <div>
-        <span id="table-label" class="eyebrow">Table —</span>
-        <h1 class="display text-xl font-bold">Order Tracker</h1>
+      <div class="min-w-0">
+        <span id="table-label" class="eyebrow text-[10px] sm:text-xs block">Table —</span>
+        <h1 class="display text-base sm:text-xl font-bold whitespace-nowrap leading-tight">Order Tracker</h1>
       </div>
     </div>
-    <a href="menu.html" id="order-more-header" class="btn-secondary px-3 py-1.5 text-xs no-underline font-semibold flex items-center gap-1">
-      <span>+</span> <span>Add More Dishes</span>
+    <a href="menu.html" id="order-more-header" class="btn-secondary px-2.5 py-1.5 text-xs no-underline font-semibold flex items-center gap-1 whitespace-nowrap flex-shrink-0">
+      <span>+</span> <span class="hidden sm:inline">Add</span> <span>More</span>
     </a>
   </div>
 </header>
+
 
 <main class="max-w-3xl mx-auto px-4 pt-6 space-y-6">
 
@@ -81,6 +82,7 @@
 </main>
 
 <script src="../js/api.js"></script>
+<script src="../js/cart.js"></script>
 <script src="../js/socketClient.js"></script>
 <script>
   const params = new URLSearchParams(window.location.search);
@@ -90,7 +92,12 @@
   let activeTableNumber = null;
   let requestedOrderId = params.get("order");
 
+  if (requestedOrderId) {
+    addMyOrderId(requestedOrderId);
+  }
+
   if (!hasTable) {
+
     document.querySelector("main").innerHTML = `
       <div style="
         max-width:420px; margin:60px auto; text-align:center;
@@ -280,23 +287,25 @@
       }
       if (tableCode) activeTableIdentifier = tableCode;
 
-      if (orders && orders.length > 0) {
-        allTableOrders = orders;
-        let order = requestedOrderId ? orders.find((o) => o._id === requestedOrderId) : null;
+      const customerOrders = filterCustomerOrders(orders);
+
+      if (customerOrders && customerOrders.length > 0) {
+        allTableOrders = customerOrders;
+        let order = requestedOrderId ? customerOrders.find((o) => o._id === requestedOrderId) : null;
         if (!order) {
-          order = orders[0];
+          order = customerOrders[0];
         }
         currentOrder = order;
         paintStatus(order.status);
         renderOrderDetails(order);
-        renderOrderTabs(orders, order._id);
+        renderOrderTabs(customerOrders, order._id);
       } else {
-        document.getElementById("status-message").textContent = `No active orders found for Table ${activeTableNumber}.`;
+        document.getElementById("status-message").textContent = `No active orders found for you at Table ${activeTableNumber || ""}.`;
         document.getElementById("order-details").innerHTML = `
           <div class="text-center py-6">
             <p class="text-3xl mb-2">🍽️</p>
-            <p class="font-semibold text-sm">No orders found for Table ${activeTableNumber}</p>
-            <p class="text-xs text-stone-500 mt-1">Browse our menu and place your first order!</p>
+            <p class="font-semibold text-sm">No order history found for your session</p>
+            <p class="text-xs text-stone-500 mt-1">Browse our menu and place your order!</p>
             <a href="menu.html?table=${activeTableIdentifier}" class="btn-primary inline-block px-5 py-2.5 mt-4 text-xs font-semibold no-underline">Browse Menu →</a>
           </div>
         `;
@@ -318,15 +327,19 @@
   initOrderStatusTable();
 
   const socket = connectAsCustomer(rawTableIdentifier, (order) => {
-    if (!requestedOrderId || order._id === requestedOrderId || (currentOrder && currentOrder._id === order._id)) {
-      currentOrder = order;
-      paintStatus(order.status);
-      renderOrderDetails(order);
+    if (!order) return;
+    const myIds = getMyOrderIds();
+    if (myIds.includes(order._id) || (requestedOrderId && order._id === requestedOrderId) || filterCustomerOrders([order]).length > 0) {
+      if (!requestedOrderId || order._id === requestedOrderId || (currentOrder && currentOrder._id === order._id)) {
+        currentOrder = order;
+        paintStatus(order.status);
+        renderOrderDetails(order);
+      }
+      const idx = allTableOrders.findIndex((o) => o._id === order._id);
+      if (idx !== -1) allTableOrders[idx] = order;
+      else allTableOrders.unshift(order);
+      renderOrderTabs(allTableOrders, currentOrder ? currentOrder._id : null);
     }
-    const idx = allTableOrders.findIndex((o) => o._id === order._id);
-    if (idx !== -1) allTableOrders[idx] = order;
-    else allTableOrders.unshift(order);
-    renderOrderTabs(allTableOrders, currentOrder ? currentOrder._id : null);
   });
 
   setInterval(() => {
